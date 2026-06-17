@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  employeeId   String     @unique
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         String     // "employee", "hr", "admin"
+  department   String?
+  claims       Claim[]    @relation("UserClaims")
+  approvals    Approval[] @relation("UserApprovals")
+}
+
+model Claim {
+  id             Int        @id @default(autoincrement())
+  employeeId     Int
+  employee       User       @relation("UserClaims", fields: [employeeId], references: [id])
+  status         String     // "SUBMITTED", "UNDER_REVIEW", "NEEDS_CLARIFICATION", "APPROVED", "REJECTED", "REIMBURSED"
+  totalAmount    Float      @default(0)
+  approvedAmount Float?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  documents      Document[]
+  approvals      Approval[]
+}
+
+model Document {
+  id            Int      @id @default(autoincrement())
+  claimId       Int
+  claim         Claim    @relation(fields: [claimId], references: [id])
+  docType       String
+  fileUrl       String
+  extractedText String?
+  extractedJson Json?
+}
+
+model Approval {
+  id         Int      @id @default(autoincrement())
+  claimId    Int
+  claim      Claim    @relation(fields: [claimId], references: [id])
+  reviewerId Int
+  reviewer   User     @relation("UserApprovals", fields: [reviewerId], references: [id])
+  decision   String
+  remarks    String?
+  createdAt  DateTime @default(now())
+}
