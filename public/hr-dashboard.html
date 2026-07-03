@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMRC - HR Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { dmrcBlue: '#002B7F', dmrcRed: '#E31D23', bgLight: '#F8FAFC' } } } }
+    </script>
+    <style>.sidebar-item.active { background-color: #1E40AF; color: white; }</style>
+</head>
+
+<body class="bg-bgLight text-gray-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-gray-100 h-16 flex items-center justify-between px-6 sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 flex items-center justify-center shrink-0">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Delhi_Metro_logo.svg/500px-Delhi_Metro_logo.svg.png" alt="DMRC Logo" class="w-full h-full object-contain">
+            </div>
+            <span class="text-dmrcBlue font-black text-xl tracking-wider ml-1">DMRC</span>
+            <span class="text-gray-300 mx-2">|</span>
+            <span class="text-xs font-bold text-dmrcBlue uppercase tracking-wide">Medical Reimbursement Management Platform</span>
+        </div>
+        <div class="flex items-center space-x-6">
+            <div class="relative cursor-pointer bg-gray-50 p-2 rounded-full hover:bg-gray-100 transition-colors">
+                <i class="fa-regular fa-bell text-lg text-gray-600"></i>
+                <span class="absolute top-1.5 right-1.5 bg-dmrcRed text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full" id="metric-pending-badge">0</span>
+            </div>
+            <div class="flex items-center space-x-3 border-l pl-6 border-gray-200">
+                <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-dmrcBlue font-bold text-sm shadow-inner"><i class="fa-solid fa-user-tie"></i></div>
+                <div class="text-left leading-tight">
+                    <p class="text-xs font-bold text-gray-900" id="user-display-name">HR Admin</p>
+                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Role: Administrator</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1">
+        <aside class="w-64 bg-dmrcBlue text-gray-300 flex flex-col justify-between p-4 min-h-[calc(100vh-4rem)] shadow-lg shrink-0">
+            <div class="space-y-1.5">
+                <button class="sidebar-item active w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-house w-5 text-center"></i><span>Dashboard</span>
+                </button>
+                <button onclick="filterAndScroll('')" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-blue-800/40 hover:text-white group">
+                    <div class="flex items-center space-x-3"><i class="fa-regular fa-clock w-5 text-center"></i><span>Pending Claims</span></div>
+                    <span class="bg-dmrcRed text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full shadow-sm" id="sidebar-pending-counter">0</span>
+                </button>
+                <button onclick="window.location.href='approved-claims.html'" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-blue-800/40 hover:text-white">
+                    <i class="fa-regular fa-circle-check w-5 text-center"></i><span>Approved Claims</span>
+                </button>
+            </div>
+            <div class="p-4 space-y-4">
+                <a href="#" onclick="clearSession(); window.location.href='index.html';" class="flex items-center gap-3 px-4 py-3 border-t border-white/10 hover:text-white text-slate-400 transition-colors">
+                    <i class="fa-solid fa-right-from-bracket text-sm w-5"></i><span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 grid grid-cols-4 gap-6 items-start overflow-y-auto">
+            <div class="col-span-3 space-y-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-xl font-black text-gray-900">HR Dashboard</h1>
+                        <p class="text-xs text-gray-400 mt-1">Review and process medical reimbursement claims</p>
+                    </div>
+                    <div class="bg-white border border-gray-100 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500 shadow-sm" id="current-date-badge">--</div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-white border border-gray-100 p-5 rounded-2xl flex items-center space-x-4 shadow-sm">
+                        <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-regular fa-file-lines"></i></div>
+                        <div><p class="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Pending Claims</p><p class="text-2xl font-black text-amber-500 mt-0.5" id="metric-pending-count">0</p><p class="text-[10px] text-gray-400 font-medium">Awaiting your approval</p></div>
+                    </div>
+                    <div class="bg-white border border-gray-100 p-5 rounded-2xl flex items-center space-x-4 shadow-sm">
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-regular fa-circle-check"></i></div>
+                        <div><p class="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Approved Today</p><p class="text-2xl font-black text-emerald-500 mt-0.5" id="metric-approved-count">0</p><p class="text-[10px] text-gray-400 font-medium">Claims approved today</p></div>
+                    </div>
+                    <div class="bg-white border border-gray-100 p-5 rounded-2xl flex items-center space-x-4 shadow-sm">
+                        <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-regular fa-circle-question"></i></div>
+                        <div><p class="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Queries Open</p><p class="text-2xl font-black text-purple-600 mt-0.5" id="metric-queries-count">0</p><p class="text-[10px] text-gray-400 font-medium">Require your attention</p></div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                    <div class="flex justify-between items-center border-b border-gray-50 pb-3">
+                        <h2 class="font-black text-sm text-gray-900 uppercase tracking-wide">All Claims</h2>
+                        <select id="statusFilter" class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 font-semibold text-gray-600">
+                            <option value="">All Status</option>
+                            <option>Submitted</option>
+                            <option>Under Review</option>
+                            <option>Query Raised</option>
+                            <option>Approved</option>
+                            <option>Payment Done</option>
+                            <option>Rejected</option>
+                        </select>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs" id="claims-table">
+                            <thead>
+                                <tr class="text-gray-400 border-b border-gray-100 uppercase font-bold tracking-wider text-[10px]">
+                                    <th class="py-3 px-2">Claim ID</th>
+                                    <th class="py-3 px-2">Employee Name</th>
+                                    <th class="py-3 px-2">Department</th>
+                                    <th class="py-3 px-2">Amount (₹)</th>
+                                    <th class="py-3 px-2">Status</th>
+                                    <th class="py-3 px-2">Submitted On</th>
+                                    <th class="py-3 px-2 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50 font-medium text-gray-700" id="claims-table-body"></tbody>
+                        </table>
+                        <div class="flex flex-col items-center justify-center py-20 text-gray-400 space-y-3 hidden" id="claims-empty-state">
+                            <i class="fa-regular fa-folder-open text-5xl text-gray-300"></i>
+                            <p class="text-sm font-bold text-gray-500">No claims found</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-1 bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-4 h-full">
+                <div class="flex justify-between items-center border-b border-gray-50 pb-2">
+                    <h2 class="text-sm font-black text-gray-900 uppercase tracking-wide flex items-center gap-2"><i class="fa-solid fa-network-wired text-gray-400"></i> Top Departments</h2>
+                </div>
+                <div class="space-y-2.5 text-xs font-semibold text-gray-500" id="department-breakdown-list">
+                    <div class="text-center py-6 text-gray-400 italic font-medium text-[11px]">No allocation weights generated.</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="bg-white border-t border-gray-100 text-center py-3 text-[10px] font-semibold text-gray-400 tracking-wide">
+        Powered by <span class="text-dmrcBlue font-bold">DMRC</span> <span class="text-gray-300 mx-1">|</span> Version 1.0.0 — Prototype
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        const session = requireRole('hr');
+        let allClaims = [];
+
+        function filterAndScroll(status) {
+            document.getElementById('statusFilter').value = status;
+            render();
+        }
+
+        async function load() {
+            if (!session) return;
+            document.getElementById('user-display-name').textContent = session.user.name;
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('current-date-badge').textContent = new Date().toLocaleDateString('en-IN', options);
+
+            const stats = await apiGet('/stats/hr');
+            document.getElementById('metric-pending-count').textContent = stats.pending;
+            document.getElementById('metric-approved-count').textContent = stats.approvedToday;
+            document.getElementById('metric-queries-count').textContent = stats.queriesOpen;
+            document.getElementById('sidebar-pending-counter').textContent = stats.pending;
+            document.getElementById('metric-pending-badge').textContent = stats.pending;
+
+            const deptEntries = Object.entries(stats.deptTotals).sort((a, b) => b[1] - a[1]);
+            const deptList = document.getElementById('department-breakdown-list');
+            if (deptEntries.length) {
+                const max = deptEntries[0][1] || 1;
+                deptList.innerHTML = deptEntries.map(([dept, amt]) => `
+                    <div>
+                        <div class="flex justify-between mb-1"><span>${dept}</span><span class="text-gray-900 font-bold">₹${fmtCurrency(amt)}</span></div>
+                        <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-dmrcBlue" style="width:${Math.round((amt/max)*100)}%"></div></div>
+                    </div>`).join('');
+            }
+
+            allClaims = await apiGet('/hr/claims');
+            render();
+        }
+
+        function render() {
+            const status = document.getElementById('statusFilter').value;
+            const filtered = status ? allClaims.filter(c => c.status === status) : allClaims;
+            const tbody = document.getElementById('claims-table-body');
+            const empty = document.getElementById('claims-empty-state');
+            if (filtered.length === 0) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+            tbody.innerHTML = filtered.map(c => `
+                <tr class="hover:bg-gray-50/60">
+                    <td class="py-3 px-2 font-bold text-gray-800">${c.claim_id}</td>
+                    <td class="py-3 px-2">${c.employee_name}</td>
+                    <td class="py-3 px-2">${c.department}</td>
+                    <td class="py-3 px-2 font-bold">₹${fmtCurrency(c.requested_amount)}</td>
+                    <td class="py-3 px-2"><span class="status-pill ${statusClass(c.status)}">${c.status}</span></td>
+                    <td class="py-3 px-2">${fmtDate(c.submitted_date)}</td>
+                    <td class="py-3 px-2 text-center"><a href="claim-review.html?id=${c.claim_id}" class="text-blue-600 hover:underline font-bold">Review</a></td>
+                </tr>
+            `).join('');
+        }
+        document.getElementById('statusFilter').addEventListener('change', render);
+
+        load();
+    </script>
+</body>
+
+</html>

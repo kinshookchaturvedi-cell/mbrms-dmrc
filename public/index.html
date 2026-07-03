@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMRC - Medical Reimbursement Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="composite-bg min-h-screen w-full flex flex-col justify-between p-4 antialiased font-sans">
+
+    <div class="m-auto w-full max-w-4xl">
+        <div class="bg-white rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.06)] border border-slate-100 p-8 sm:p-12">
+            <header class="flex flex-col items-center text-center mb-8">
+                <div class="w-14 h-14 flex items-center justify-center mb-2">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Delhi_Metro_logo.svg/500px-Delhi_Metro_logo.svg.png"
+                        alt="DMRC Logo" class="w-full h-full object-contain">
+                </div>
+                <h1 class="text-gray-800 font-extrabold text-xl tracking-wider mb-2">DMRC</h1>
+                <h2 class="text-[#003893] font-extrabold text-2xl sm:text-3xl uppercase max-w-2xl leading-tight tracking-wider mb-3">
+                    MEDICAL REIMBURSEMENT<br>MANAGEMENT PLATFORM
+                </h2>
+                <div class="w-full max-w-xs flex items-center justify-center my-3 opacity-80">
+                    <div class="h-[1px] bg-gradient-to-r from-transparent to-blue-300 flex-grow"></div>
+                    <div class="mx-3 text-[#003893] border border-blue-200 rounded p-1 text-[10px] bg-white">
+                        <i class="fa-solid fa-shield-medical"></i>
+                    </div>
+                    <div class="h-[1px] bg-gradient-to-l from-transparent to-blue-300 flex-grow"></div>
+                </div>
+                <p class="text-gray-500 font-medium text-sm">Select your role to access the portal</p>
+            </header>
+
+            <main class="grid md:grid-cols-2 gap-6 mb-2">
+                <div class="border border-slate-100 rounded-2xl p-8 flex flex-col justify-between bg-white shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300">
+                    <div>
+                        <div class="flex justify-center mb-4">
+                            <div class="w-20 h-20 bg-[#eaf2ff] text-[#003893] rounded-full flex items-center justify-center">
+                                <i class="fa-regular fa-user text-3xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-center font-bold text-[#003893] text-lg uppercase tracking-wide">Employee</h3>
+                        <div class="w-10 h-[3px] bg-[#003893] mx-auto rounded-full mt-1.5 mb-6"></div>
+                        <ul class="space-y-4 text-gray-500 text-xs sm:text-sm max-w-xs mx-auto">
+                            <li class="flex items-center gap-3"><i class="fa-regular fa-file-lines text-blue-800 text-base w-4"></i> Submit Claims</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-cloud-arrow-up text-blue-800 text-base w-4"></i> Upload Medical Documents</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-magnifying-glass-chart text-blue-800 text-base w-4"></i> Track Claim Status</li>
+                        </ul>
+                    </div>
+                    <button onclick="window.location.href='employee-login.html'"
+                        class="mt-8 w-full bg-dmrc-blue text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-900 transition-all shadow-md uppercase text-xs tracking-wider">
+                        <span>Continue</span><i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="border border-slate-100 rounded-2xl p-8 flex flex-col justify-between bg-white shadow-sm hover:shadow-xl hover:border-purple-300 transition-all duration-300">
+                    <div>
+                        <div class="flex justify-center mb-4">
+                            <div class="w-20 h-20 bg-[#f3efff] text-[#512da8] rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-user-shield text-3xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-center font-bold text-[#512da8] text-lg uppercase tracking-wide">HR Admin</h3>
+                        <div class="w-10 h-[3px] bg-[#512da8] mx-auto rounded-full mt-1.5 mb-6"></div>
+                        <ul class="space-y-4 text-gray-500 text-xs sm:text-sm max-w-xs mx-auto">
+                            <li class="flex items-center gap-3"><i class="fa-regular fa-circle-check text-purple-800 text-base w-4"></i> Approve Claims</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-users-gear text-purple-800 text-base w-4"></i> Manage Users</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-chart-pie text-purple-800 text-base w-4"></i> Generate Reports</li>
+                        </ul>
+                    </div>
+                    <button onclick="window.location.href='hr-login.html'"
+                        class="mt-8 w-full bg-dmrc-purple text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-purple-900 transition-all shadow-md uppercase text-xs tracking-wider">
+                        <span>Continue</span><i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+            </main>
+
+            <p class="text-center text-[11px] text-slate-400 mt-6">
+                Demo logins — Employee: <b>EMP10234</b> / <b>pass123</b> &nbsp;|&nbsp; HR: <b>HR2001</b> / <b>hrpass123</b>
+            </p>
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-slate-400 font-medium tracking-wide">
+        <p>Powered by <span class="font-bold text-[#003893]">DMRC</span></p>
+        <p class="text-[10px] opacity-80 mt-0.5">Version 1.0.0 — Prototype</p>
+    </footer>
+</body>
+
+</html>

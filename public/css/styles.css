@@ -1,0 +1,141 @@
+/* DMRC Medical Reimbursement Platform — shared styles */
+
+:root {
+  --dmrc-blue: #003893;
+  --dmrc-blue-dark: #001E50;
+  --dmrc-purple: #512da8;
+  --dmrc-red: #E31D23;
+}
+
+.bg-dmrc-blue { background-color: var(--dmrc-blue); }
+.text-dmrc-blue { color: var(--dmrc-blue); }
+.bg-dmrc-purple { background-color: var(--dmrc-purple); }
+.text-dmrc-purple { color: var(--dmrc-purple); }
+
+.composite-bg {
+  background: linear-gradient(rgba(240, 244, 248, 0.25), rgba(240, 244, 248, 0.25)),
+    url("https://media.istockphoto.com/id/2062148631/vector/abstract-light-blue-background-with-shape-freeform-curved-wavy-and-copy-space.jpg?s=612x612&w=0&k=20&c=XQxpXF1oc8YAAokpyl0NBoXzDzyfpGXCA10dcEo13CU=");
+  background-size: cover;
+  background-position: center;
+}
+
+/* ---- SAP-style claim form table ---- */
+.claim-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.claim-table th {
+  background: #eef2f9;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  font-size: 10px;
+  padding: 8px 6px;
+  border: 1px solid #dbe2ee;
+  white-space: nowrap;
+}
+.claim-table td {
+  border: 1px solid #e2e8f0;
+  padding: 4px;
+  vertical-align: middle;
+}
+.claim-table input,
+.claim-table select {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 12px;
+  padding: 5px 6px;
+  border-radius: 4px;
+  outline: none;
+}
+.claim-table input:focus,
+.claim-table select:focus {
+  border-color: var(--dmrc-blue);
+  background: #fff;
+}
+.claim-table tr:nth-child(even) td { background: #fafbfd; }
+
+.field-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  margin-bottom: 4px;
+  display: block;
+}
+.field-label .req { color: var(--dmrc-red); }
+
+.field-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #f8fafc;
+  outline: none;
+  transition: all .15s;
+}
+.field-input:focus { border-color: var(--dmrc-blue); background: #fff; box-shadow: 0 0 0 3px rgba(0,56,147,.08); }
+.field-input:disabled { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
+
+.status-pill {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.status-Submitted, .status-Under-Review { background: #dbeafe; color: #1d4ed8; }
+.status-Approved, .status-Payment-Done { background: #dcfce7; color: #166534; }
+.status-Query-Raised { background: #fef9c3; color: #854d0e; }
+.status-Rejected { background: #fee2e2; color: #991b1b; }
+
+/* verification badges (mirrors parser4.html logic) */
+.verify-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.verify-pending { background: #f1f5f9; color: #64748b; }
+.verify-checking { background: #fef9c3; color: #854d0e; }
+.verify-verified { background: #dcfce7; color: #166534; }
+.verify-partial { background: #fef3c7; color: #92400e; }
+.verify-failed { background: #fee2e2; color: #991b1b; }
+
+mark.anchor { background: #fde68a; padding: 0 2px; border-radius: 2px; }
+mark.nearby { background: #bbf7d0; padding: 0 2px; border-radius: 2px; font-weight: 700; }
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1f2937;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all .25s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #166534; }
+.toast.error { background: #991b1b; }

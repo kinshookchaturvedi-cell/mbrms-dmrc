@@ -1,0 +1,7 @@
+type_id,type_name
+RT01,Medical Pathology/Ophthalmology
+RT02,Hospitalization (Indoor Treatment)
+RT03,Outpatient (OPD) Treatment
+RT04,Dental Treatment
+RT05,Maternity Treatment
+RT06,Domiciliary Treatment

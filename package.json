@@ -1,11 +1,18 @@
 {
-  "name": "dmrc",
+  "name": "dmrc-medical-reimbursement",
   "version": "1.0.0",
+  "description": "DMRC Medical Reimbursement Management Platform - prototype",
+  "main": "server/server.js",
   "scripts": {
-    "install:all": "cd backend && npm install && cd ../frontend-employee && npm install && cd ../frontend-hr && npm install",
-    "start": "npx concurrently \"cd backend && npx tsx src/index.ts\" \"cd frontend-employee && npm run dev -- --port 5173\" \"cd frontend-hr && npm run dev -- --port 5174\""
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
   },
   "dependencies": {
-    "concurrently": "^8.2.2"
+    "express": "^4.19.2",
+    "multer": "^2.0.0",
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
   }
 }

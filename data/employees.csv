@@ -1,0 +1,6 @@
+employee_id,password,name,designation,department,pay_scale,room_entitlement,employment_status,mobile,email,date_of_joining
+EMP10234,pass123,SAMARPIT ARYA,Sr Supervisor,Rolling Stock,46000-145000-Sr Sup1,Single Room :8400 /-,Direct Recruit - Active,9810012345,samarpit.arya@dmrc.org,2014-06-12
+EMP10567,pass123,NEHA MALHOTRA,Station Controller,Operations,35000-115000-Ctrl1,Twin Sharing :6200 /-,Direct Recruit - Active,9810054321,neha.malhotra@dmrc.org,2016-03-21
+EMP10890,pass123,RAVI KUMAR,Assistant Manager,Electrical,40000-130000-AM2,Single Room :8400 /-,Direct Recruit - Active,9810098765,ravi.kumar@dmrc.org,2012-11-04
+EMP11023,pass123,PRIYA SHARMA,Junior Engineer,Civil,30000-105000-JE1,Twin Sharing :6200 /-,Direct Recruit - Active,9810011223,priya.sharma@dmrc.org,2019-07-15
+EMP10456,pass123,SHUBHI AGARWAL,Senior Engineer,Signalling,42000-135000-SE1,Single Room :8400 /-,Direct Recruit - Active,9211258981,shubhi.agarwal@dmrc.org,2015-08-10

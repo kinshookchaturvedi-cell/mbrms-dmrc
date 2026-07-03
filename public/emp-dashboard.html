@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMRC - Employee Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans antialiased">
+
+    <div class="flex min-h-screen relative">
+
+        <aside class="w-64 bg-[#001E50] text-slate-300 flex flex-col justify-between fixed h-full z-40">
+            <div>
+                <div class="flex items-center gap-3 px-6 py-5 bg-white border-b border-slate-100">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Delhi_Metro_logo.svg/500px-Delhi_Metro_logo.svg.png"
+                        alt="DMRC Logo" class="w-8 h-8 object-contain">
+                    <span class="text-[#003893] font-black text-xl tracking-wider">DMRC</span>
+                </div>
+                <nav class="mt-6 px-3 space-y-1">
+                    <a href="emp-dashboard.html" class="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white font-semibold rounded-xl transition-all">
+                        <i class="fa-solid fa-house text-sm w-5"></i><span>Dashboard</span>
+                    </a>
+                    <a href="my-claims.html" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all">
+                        <i class="fa-regular fa-file-lines text-sm w-5"></i><span>My Claims</span>
+                    </a>
+                    <a href="new-claim.html" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all">
+                        <i class="fa-solid fa-plus text-sm w-5"></i><span>New Claim</span>
+                    </a>
+                    <a href="my-claims.html" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all">
+                        <i class="fa-regular fa-folder-open text-sm w-5"></i><span>Documents</span>
+                    </a>
+                    <a href="my-claims.html" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all">
+                        <i class="fa-solid fa-chart-simple text-sm w-5"></i><span>Claim Status</span>
+                    </a>
+                </nav>
+            </div>
+            <div class="p-4 space-y-4">
+                <a href="#" onclick="clearSession(); window.location.href='index.html';"
+                    class="flex items-center gap-3 px-4 py-3 border-t border-white/10 hover:text-white text-slate-400 transition-colors">
+                    <i class="fa-solid fa-right-from-bracket text-sm w-5"></i><span>Logout</span>
+                </a>
+                <div class="border border-blue-500/30 bg-blue-950/40 rounded-xl p-3 flex gap-2.5">
+                    <i class="fa-solid fa-shield-halved text-blue-400 text-sm mt-0.5 shrink-0"></i>
+                    <div>
+                        <h4 class="text-[11px] font-bold text-white uppercase tracking-wider mb-0.5">Secure Access</h4>
+                        <p class="text-[10px] text-slate-400 leading-normal">All your data is encrypted and protected as per DMRC security policy.</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="flex-grow pl-64 flex flex-col min-h-screen w-full">
+            <header class="h-16 bg-white border-b border-slate-100 px-8 flex items-center justify-between sticky top-0 z-30">
+                <span class="text-[#001E50] font-bold text-sm tracking-wide uppercase">Medical Reimbursement Management Platform</span>
+                <div class="flex items-center gap-6">
+                    <button class="relative text-slate-400 hover:text-slate-600 transition-colors">
+                        <i class="fa-regular fa-bell text-lg"></i>
+                        <span class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                    </button>
+                    <div class="flex items-center gap-3 pl-4 border-l border-slate-100">
+                        <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 border border-blue-200 font-bold text-xs">
+                            <span id="avatarInitials">--</span>
+                        </div>
+                        <div class="text-left hidden sm:block">
+                            <h3 class="text-xs font-bold text-slate-700" id="userName">Loading...</h3>
+                            <span class="text-[10px] font-medium text-slate-400 uppercase tracking-wider" id="userDesignation">Employee</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="p-8 flex-grow space-y-6 max-w-[1600px] w-full mx-auto">
+
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Welcome, <span id="welcomeName">--</span>!</h1>
+                        <p class="text-sm text-slate-400 mt-0.5">Here's what's happening with your claims today.</p>
+                    </div>
+                    <a href="new-claim.html"
+                        class="bg-dmrc-blue hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-xl flex items-center gap-2 shadow-md transition-all w-fit">
+                        <i class="fa-solid fa-plus"></i> New Claim
+                    </a>
+                </div>
+
+                <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-white border border-slate-200/60 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-regular fa-file-lines text-lg"></i></div>
+                        <div><span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Claims</span><div class="text-xl font-black text-slate-800 mt-0.5" id="statTotal">0</div></div>
+                    </div>
+                    <div class="bg-white border border-slate-200/60 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><i class="fa-regular fa-circle-check text-lg"></i></div>
+                        <div><span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Approved</span><div class="text-xl font-black text-slate-800 mt-0.5" id="statApproved">0</div></div>
+                    </div>
+                    <div class="bg-white border border-slate-200/60 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0"><i class="fa-regular fa-clock text-lg"></i></div>
+                        <div><span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Under Review</span><div class="text-xl font-black text-slate-800 mt-0.5" id="statReview">0</div></div>
+                    </div>
+                    <div class="bg-white border border-slate-200/60 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0"><i class="fa-regular fa-circle-xmark text-lg"></i></div>
+                        <div><span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Rejected</span><div class="text-xl font-black text-slate-800 mt-0.5" id="statRejected">0</div></div>
+                    </div>
+                </section>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white border border-slate-200/60 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                            <h3 class="font-black text-slate-900 text-base">Recent Claims</h3>
+                            <a href="my-claims.html" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                                <span>View All Claims</span><i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
+                                        <th class="py-3.5 px-5">Claim ID</th>
+                                        <th class="py-3.5 px-5">Date Submitted</th>
+                                        <th class="py-3.5 px-5">Hospital</th>
+                                        <th class="py-3.5 px-5">Amount (₹)</th>
+                                        <th class="py-3.5 px-5">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="claimsTableBody" class="divide-y divide-slate-100 font-medium text-slate-700">
+                                    <tr><td colspan="5" class="py-12 text-center text-slate-400 italic font-medium bg-slate-50/20">
+                                        <i class="fa-regular fa-folder-open text-xl block mb-2 text-slate-300"></i>
+                                        No recent medical reimbursement claims recorded.
+                                    </td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6 w-full">
+                        <div class="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-sm">
+                            <h3 class="font-black text-slate-900 text-sm mb-4">Claim Summary</h3>
+                            <div class="flex items-center gap-6">
+                                <div class="relative w-24 h-24 shrink-0 flex items-center justify-center">
+                                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#e2e8f0" stroke-width="3.5"></circle>
+                                        <circle id="summaryRing" cx="18" cy="18" r="15.915" fill="none" stroke="#003893" stroke-width="3.5" stroke-dasharray="0 100"></circle>
+                                    </svg>
+                                    <div class="absolute text-center">
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase leading-none">Total</span>
+                                        <div class="text-base font-black text-slate-700 leading-none mt-0.5" id="ringTotal">0</div>
+                                    </div>
+                                </div>
+                                <ul class="text-[11px] font-semibold text-slate-600 space-y-2 flex-grow">
+                                    <li class="flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Approved</span></div><span class="text-slate-400" id="pctApproved">0 (0%)</span></li>
+                                    <li class="flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-600"></span><span>Under Review</span></div><span class="text-slate-400" id="pctReview">0 (0%)</span></li>
+                                    <li class="flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Query Raised</span></div><span class="text-slate-400" id="pctQuery">0 (0%)</span></li>
+                                    <li class="flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span><span>Rejected</span></div><span class="text-slate-400" id="pctRejected">0 (0%)</span></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-sm">
+                            <h3 class="font-black text-slate-900 text-sm mb-3">My Profile</h3>
+                            <dl class="text-xs space-y-2.5 text-slate-600">
+                                <div class="flex justify-between"><dt class="text-slate-400 font-semibold">Designation</dt><dd class="font-bold" id="profDesignation">--</dd></div>
+                                <div class="flex justify-between"><dt class="text-slate-400 font-semibold">Department</dt><dd class="font-bold" id="profDept">--</dd></div>
+                                <div class="flex justify-between"><dt class="text-slate-400 font-semibold">Pay Scale</dt><dd class="font-bold" id="profPayScale">--</dd></div>
+                                <div class="flex justify-between"><dt class="text-slate-400 font-semibold">Room Entitlement</dt><dd class="font-bold" id="profRoom">--</dd></div>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <footer class="w-full text-center py-5 border-t border-slate-100 text-[11px] text-slate-400 font-medium tracking-wide bg-white">
+                <p>Powered by <span class="font-bold text-slate-600">DMRC</span></p>
+                <p class="text-[9px] opacity-80 mt-0.5">Version 1.0.0 — Prototype</p>
+            </footer>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        const session = requireRole('employee');
+
+        async function loadDashboard() {
+            if (!session) return;
+            const empId = session.user.employee_id;
+            document.getElementById('userName').textContent = session.user.name;
+            document.getElementById('welcomeName').textContent = session.user.name.split(' ')[0];
+            document.getElementById('userDesignation').textContent = session.user.designation;
+            document.getElementById('avatarInitials').textContent = session.user.name.split(' ').map(w => w[0]).slice(0,2).join('');
+            document.getElementById('profDesignation').textContent = session.user.designation;
+            document.getElementById('profDept').textContent = session.user.department;
+            document.getElementById('profPayScale').textContent = session.user.pay_scale;
+            document.getElementById('profRoom').textContent = session.user.room_entitlement;
+
+            const stats = await apiGet(`/stats/employee/${empId}`);
+            document.getElementById('statTotal').textContent = stats.total;
+            document.getElementById('statApproved').textContent = stats.approved;
+            document.getElementById('statReview').textContent = stats.underReview;
+            document.getElementById('statRejected').textContent = stats.rejected;
+
+            const total = stats.total || 1;
+            const pct = n => Math.round((n / total) * 100);
+            document.getElementById('pctApproved').textContent = `${stats.approved} (${pct(stats.approved)}%)`;
+            document.getElementById('pctReview').textContent = `${stats.underReview} (${pct(stats.underReview)}%)`;
+            document.getElementById('pctQuery').textContent = `${stats.queryRaised} (${pct(stats.queryRaised)}%)`;
+            document.getElementById('pctRejected').textContent = `${stats.rejected} (${pct(stats.rejected)}%)`;
+            document.getElementById('ringTotal').textContent = stats.total;
+            const approvedPct = stats.total ? Math.round((stats.approved / stats.total) * 100) : 0;
+            document.getElementById('summaryRing').setAttribute('stroke-dasharray', `${approvedPct} 100`);
+
+            const claims = await apiGet(`/claims?employeeId=${empId}`);
+            const tbody = document.getElementById('claimsTableBody');
+            if (claims.length === 0) return;
+            tbody.innerHTML = claims.slice(0, 6).map(c => `
+                <tr class="hover:bg-slate-50/60">
+                    <td class="py-3 px-5 font-bold text-slate-800">${c.claim_id}</td>
+                    <td class="py-3 px-5">${fmtDate(c.submitted_date)}</td>
+                    <td class="py-3 px-5">${c.hospital || '--'}</td>
+                    <td class="py-3 px-5 font-bold">₹${fmtCurrency(c.requested_amount)}</td>
+                    <td class="py-3 px-5"><span class="status-pill ${statusClass(c.status)}">${c.status}</span></td>
+                </tr>
+            `).join('');
+        }
+        loadDashboard();
+    </script>
+</body>
+
+</html>

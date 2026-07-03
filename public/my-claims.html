@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMRC - My Claims</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans antialiased">
+
+    <div class="flex min-h-screen relative">
+
+        <aside class="w-64 bg-[#001E50] text-slate-300 flex flex-col justify-between fixed h-full z-40">
+            <div>
+                <div class="flex items-center gap-3 px-6 py-5 bg-white border-b border-slate-100">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Delhi_Metro_logo.svg/500px-Delhi_Metro_logo.svg.png" alt="DMRC Logo" class="w-8 h-8 object-contain">
+                    <span class="text-[#003893] font-black text-xl tracking-wider">DMRC</span>
+                </div>
+                <nav class="mt-6 px-3 space-y-1">
+                    <a href="emp-dashboard.html" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all"><i class="fa-solid fa-house text-sm w-5"></i><span>Dashboard</span></a>
+                    <a href="my-claims.html" class="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white font-semibold rounded-xl transition-all"><i class="fa-regular fa-file-lines text-sm w-5"></i><span>My Claims</span></a>
+                    <a href="new-claim.html" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all"><i class="fa-solid fa-plus text-sm w-5"></i><span>New Claim</span></a>
+                </nav>
+            </div>
+            <div class="p-4 space-y-4">
+                <a href="#" onclick="clearSession(); window.location.href='index.html';" class="flex items-center gap-3 px-4 py-3 border-t border-white/10 hover:text-white text-slate-400 transition-colors"><i class="fa-solid fa-right-from-bracket text-sm w-5"></i><span>Logout</span></a>
+            </div>
+        </aside>
+
+        <div class="flex-grow pl-64 flex flex-col min-h-screen w-full">
+            <header class="h-16 bg-white border-b border-slate-100 px-8 flex items-center justify-between sticky top-0 z-30">
+                <span class="text-[#001E50] font-bold text-sm tracking-wide uppercase">Medical Reimbursement Management Platform</span>
+                <div class="text-xs font-bold text-slate-500" id="userBadge">--</div>
+            </header>
+
+            <main class="p-8 flex-grow space-y-6 max-w-[1600px] w-full mx-auto">
+                <div>
+                    <nav class="flex items-center gap-2 text-[11px] font-bold tracking-wide uppercase mb-1">
+                        <a href="emp-dashboard.html" class="text-blue-600 hover:underline">Dashboard</a>
+                        <i class="fa-solid fa-angle-right text-slate-300 text-[9px]"></i>
+                        <span class="text-slate-400">My Claims</span>
+                    </nav>
+                    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">My Claims</h1>
+                    <p class="text-sm text-slate-400 mt-0.5">View and track all your medical reimbursement claims</p>
+                </div>
+
+                <section class="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+                    <div class="lg:col-span-2">
+                        <label class="field-label">Search Claims</label>
+                        <input id="searchBox" type="text" placeholder="Search by Claim ID, Hospital, Disease..." class="field-input">
+                    </div>
+                    <div>
+                        <label class="field-label">Status</label>
+                        <select id="statusFilter" class="field-input">
+                            <option value="">All Status</option>
+                            <option>Submitted</option>
+                            <option>Under Review</option>
+                            <option>Query Raised</option>
+                            <option>Approved</option>
+                            <option>Payment Done</option>
+                            <option>Rejected</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button id="resetFilters" class="w-full px-3 py-2.5 border border-slate-200 text-slate-500 hover:bg-slate-50 rounded-lg text-xs font-bold">Reset Filters</button>
+                    </div>
+                </section>
+
+                <section class="bg-white border border-slate-200/60 rounded-2xl shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100"><h3 class="font-black text-slate-900 text-base">Claims List</h3></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
+                                    <th class="py-3.5 px-5">Claim ID</th>
+                                    <th class="py-3.5 px-5">Date Submitted</th>
+                                    <th class="py-3.5 px-5">Disease</th>
+                                    <th class="py-3.5 px-5">Hospital</th>
+                                    <th class="py-3.5 px-5">Amount (₹)</th>
+                                    <th class="py-3.5 px-5">Status</th>
+                                    <th class="py-3.5 px-5">Last Updated</th>
+                                    <th class="py-3.5 px-5 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="claimsBody" class="divide-y divide-slate-100 font-medium text-slate-700">
+                                <tr><td colspan="8" class="py-16 text-center text-slate-400 italic font-medium bg-slate-50/20">Loading claims...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="w-full text-center py-5 border-t border-slate-100 text-[11px] text-slate-400 font-medium tracking-wide bg-white mt-auto">
+                <p>Powered by <span class="font-bold text-slate-600">DMRC</span></p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Claim Detail Modal -->
+    <div id="claimModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white">
+                <h3 class="font-black text-slate-900" id="modalClaimId">Claim Details</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-5 space-y-4" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        const session = requireRole('employee');
+        let allClaims = [];
+
+        async function load() {
+            if (!session) return;
+            document.getElementById('userBadge').textContent = `${session.user.name} (${session.user.employee_id})`;
+            allClaims = await apiGet(`/claims?employeeId=${session.user.employee_id}`);
+            render();
+        }
+
+        function render() {
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const filtered = allClaims.filter(c => {
+                const matchesSearch = !search || [c.claim_id, c.hospital, c.disease].join(' ').toLowerCase().includes(search);
+                const matchesStatus = !status || c.status === status;
+                return matchesSearch && matchesStatus;
+            });
+            const tbody = document.getElementById('claimsBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-16 text-center text-slate-400 italic font-medium bg-slate-50/20"><i class="fa-regular fa-folder-open text-2xl block mb-2 text-slate-300"></i>No matching claims found.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = filtered.map(c => `
+                <tr class="hover:bg-slate-50/60">
+                    <td class="py-3 px-5 font-bold text-slate-800">${c.claim_id}</td>
+                    <td class="py-3 px-5">${fmtDate(c.submitted_date)}</td>
+                    <td class="py-3 px-5">${c.disease || '--'}</td>
+                    <td class="py-3 px-5">${c.hospital || '--'}</td>
+                    <td class="py-3 px-5 font-bold">₹${fmtCurrency(c.requested_amount)}</td>
+                    <td class="py-3 px-5"><span class="status-pill ${statusClass(c.status)}">${c.status}</span></td>
+                    <td class="py-3 px-5">${fmtDate(c.last_updated)}</td>
+                    <td class="py-3 px-5 text-center">
+                        <button onclick="viewClaim('${c.claim_id}')" class="text-blue-600 hover:underline font-bold">View</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('searchBox').addEventListener('input', render);
+        document.getElementById('statusFilter').addEventListener('change', render);
+        document.getElementById('resetFilters').addEventListener('click', () => {
+            document.getElementById('searchBox').value = '';
+            document.getElementById('statusFilter').value = '';
+            render();
+        });
+
+        async function viewClaim(claimId) {
+            const data = await apiGet(`/claims/${claimId}`);
+            document.getElementById('modalClaimId').textContent = `Claim ${data.claim.claim_id}`;
+            const billsHtml = data.bills.map(b => `
+                <div class="border border-slate-100 rounded-lg p-3 text-xs flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-slate-700">${b.name_of_hospital} — ${b.bill_treatment_type}</p>
+                        <p class="text-slate-400">Bill #${b.bill_number} • ${fmtDate(b.bill_date)}</p>
+                    </div>
+                    <p class="font-bold">₹${fmtCurrency(b.requested_amount)}</p>
+                </div>`).join('') || '<p class="text-slate-400 text-xs italic">No bill line items.</p>';
+
+            const remarksHtml = data.remarks.slice().reverse().map(r => `
+                <div class="flex gap-3">
+                    <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-700">${r.current_status} <span class="text-slate-400 font-medium">by ${r.user_name} (${r.user_type})</span></p>
+                        <p class="text-[11px] text-slate-400">${fmtDate(r.date)} ${r.time || ''}</p>
+                        ${r.remarks ? `<p class="text-xs text-slate-600 mt-1 bg-slate-50 rounded-lg p-2">${r.remarks}</p>` : ''}
+                    </div>
+                </div>`).join('');
+
+            document.getElementById('modalBody').innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="status-pill ${statusClass(data.claim.status)}">${data.claim.status}</span>
+                    <span class="text-xs text-slate-400">Submitted ${fmtDate(data.claim.submitted_date)}</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div><p class="text-slate-400 font-bold uppercase text-[10px]">Reimbursement Type</p><p class="font-semibold">${data.claim.reimbursement_type}</p></div>
+                    <div><p class="text-slate-400 font-bold uppercase text-[10px]">Disease</p><p class="font-semibold">${data.claim.disease}</p></div>
+                    <div><p class="text-slate-400 font-bold uppercase text-[10px]">Requested Amount</p><p class="font-semibold">₹${fmtCurrency(data.claim.requested_amount)}</p></div>
+                    <div><p class="text-slate-400 font-bold uppercase text-[10px]">Admissible Amount</p><p class="font-semibold">${data.claim.admissible_amount ? '₹' + fmtCurrency(data.claim.admissible_amount) : '--'}</p></div>
+                </div>
+                <div>
+                    <h4 class="text-xs font-black text-slate-700 uppercase mb-2">Bill Line Items</h4>
+                    <div class="space-y-2">${billsHtml}</div>
+                </div>
+                <div>
+                    <h4 class="text-xs font-black text-slate-700 uppercase mb-2">Status Timeline</h4>
+                    <div class="space-y-3">${remarksHtml}</div>
+                </div>
+            `;
+            document.getElementById('claimModal').classList.remove('hidden');
+            document.getElementById('claimModal').classList.add('flex');
+        }
+        function closeModal() {
+            document.getElementById('claimModal').classList.add('hidden');
+            document.getElementById('claimModal').classList.remove('flex');
+        }
+
+        load();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMRC - HR Admin Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="composite-bg min-h-screen w-full flex flex-col justify-between p-4 antialiased relative font-sans">
+
+    <button onclick="window.location.href='index.html'"
+        class="absolute top-5 left-5 flex items-center gap-2 text-slate-700 hover:text-blue-900 transition-colors font-medium text-sm bg-white/80 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border border-slate-100 z-50">
+        <i class="fa-solid fa-arrow-left"></i> Back to Role Selection
+    </button>
+
+    <div class="m-auto w-full max-w-xl">
+        <div class="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-slate-100 p-8 sm:p-12 mx-auto">
+            <header class="flex flex-col items-center text-center mb-6">
+                <div class="w-12 h-12 flex items-center justify-center mb-1">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Delhi_Metro_logo.svg/500px-Delhi_Metro_logo.svg.png"
+                        alt="DMRC Logo" class="w-full h-full object-contain">
+                </div>
+                <h1 class="text-gray-800 font-extrabold text-lg tracking-wider mb-1">DMRC</h1>
+                <h2 class="text-[#003893] font-black text-2xl uppercase tracking-wide mb-3">HR Login</h2>
+                <div class="w-full max-w-xs flex items-center justify-center mb-4">
+                    <div class="h-[1px] bg-slate-200 flex-grow"></div>
+                    <div class="mx-3 text-blue-800 border border-slate-200 rounded-xl w-8 h-8 flex items-center justify-center text-xs bg-white shadow-sm">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div class="h-[1px] bg-slate-200 flex-grow"></div>
+                </div>
+                <p class="text-gray-500 font-medium text-xs sm:text-sm">Login to access HR dashboard and manage claims</p>
+            </header>
+
+            <form id="loginForm" class="space-y-4">
+                <div class="flex rounded-xl bg-slate-50 border border-slate-200/80 overflow-hidden focus-within:border-blue-500 focus-within:bg-white transition-all">
+                    <div class="w-12 flex items-center justify-center text-slate-400 bg-slate-100/50 border-r border-slate-200/50">
+                        <i class="fa-regular fa-user text-sm"></i>
+                    </div>
+                    <input id="hrId" type="text" placeholder="HR ID" required value="HR2001"
+                        class="w-full bg-transparent px-4 py-3.5 text-sm outline-none text-slate-700">
+                </div>
+                <div class="flex rounded-xl bg-slate-50 border border-slate-200/80 overflow-hidden focus-within:border-blue-500 focus-within:bg-white transition-all relative">
+                    <div class="w-12 flex items-center justify-center text-slate-400 bg-slate-100/50 border-r border-slate-200/50">
+                        <i class="fa-solid fa-lock text-sm"></i>
+                    </div>
+                    <input id="hrPwdField" type="password" placeholder="Password" required value="hrpass123"
+                        class="w-full bg-transparent px-4 py-3.5 pr-10 text-sm outline-none text-slate-700">
+                    <button type="button" onclick="togglePassword('hrPwdField', 'hrEyeIcon')"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <i id="hrEyeIcon" class="fa-regular fa-eye text-sm"></i>
+                    </button>
+                </div>
+                <p id="loginError" class="text-xs text-red-600 font-semibold hidden"></p>
+                <div class="flex items-center justify-between text-xs sm:text-sm pt-1">
+                    <label class="flex items-center gap-2 cursor-pointer text-slate-600 font-medium">
+                        <input type="checkbox" class="rounded text-blue-900 border-slate-300 w-4 h-4"><span>Remember Me</span>
+                    </label>
+                    <a href="#" class="text-blue-800 font-bold hover:underline">Forgot Password?</a>
+                </div>
+                <button type="submit"
+                    class="w-full bg-[#003893] hover:bg-blue-900 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md mt-6">
+                    <i class="fa-solid fa-right-to-bracket text-sm"></i>
+                    <span class="text-sm tracking-wider uppercase">Login</span>
+                </button>
+            </form>
+
+            <div class="mt-6 bg-[#ebf3ff]/60 border border-blue-100 rounded-2xl p-4 flex items-start gap-3">
+                <div class="w-8 h-8 bg-white border border-blue-200 rounded-lg flex items-center justify-center text-blue-700 shadow-sm shrink-0">
+                    <i class="fa-solid fa-shield-halved text-sm"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-blue-950 text-xs uppercase tracking-wider mb-0.5">Secure Access</h4>
+                    <p class="text-[11px] text-slate-500 leading-normal">All your data is encrypted and protected as per DMRC security policy.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-4 text-xs text-slate-400 font-medium tracking-wide">
+        <p>Powered by <span class="font-bold text-[#003893]">DMRC</span></p>
+        <p class="text-[10px] opacity-80 mt-0.5">Version 1.0.0 — Prototype</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') { input.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash'); }
+            else { input.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye'); }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('hrId').value.trim();
+            const password = document.getElementById('hrPwdField').value;
+            const errEl = document.getElementById('loginError');
+            errEl.classList.add('hidden');
+            try {
+                const { user } = await apiPost('/login', { role: 'hr', id, password });
+                setSession('hr', user);
+                window.location.href = 'hr-dashboard.html';
+            } catch (err) {
+                errEl.textContent = err.error || 'Login failed. Please check your credentials.';
+                errEl.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>

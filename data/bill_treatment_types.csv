@@ -1,0 +1,7 @@
+type_id,type_name
+BT01,Pathology/Diagnostics
+BT02,Consultation
+BT03,Medicines/Pharmacy
+BT04,Room Charges
+BT05,Surgery/Procedure
+BT06,Other
