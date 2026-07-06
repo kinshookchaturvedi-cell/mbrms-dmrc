@@ -168,14 +168,18 @@
                                         <th style="width:30px"><input type="checkbox" id="selectAllLines"></th>
                                         <th>Line No</th>
                                         <th>Hospital Status</th>
-                                        <th>Empanelled Hospital</th>
+                                        <th>Rx Hospital</th>
+                                        <th>Bill Hospital</th>
                                         <th>Bill/Treatment Type</th>
                                         <th style="min-width:210px">Test / Description of Expense</th>
                                         <th>Bill Number</th>
+                                        <th>Rx Ref Number</th>
+                                        <th>Rx Date</th>
                                         <th>Bill Date</th>
                                         <th>Deductions (₹)</th>
                                         <th>Requested Amount (₹)</th>
                                         <th style="min-width:190px">Bill / Invoice PDF (this line)</th>
+                                        <th style="min-width:190px">Prescription PDF (this line)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="billBody"></tbody>
@@ -184,34 +188,20 @@
                         </div>
                     </section>
 
-                    <!-- SECTION: Prescription Upload & Cross-Verification -->
+                    <!-- SECTION: Cross-Verification Results -->
                     <section class="bg-white border border-slate-200/60 rounded-2xl shadow-sm">
                         <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
                             <span class="w-6 h-6 rounded-full bg-dmrc-blue text-white text-[11px] font-black flex items-center justify-center">4</span>
-                            <h2 class="font-black text-slate-900 text-sm uppercase tracking-wide">Prescription Upload &amp; Cross-Verification</h2>
+                            <h2 class="font-black text-slate-900 text-sm uppercase tracking-wide">Line-wise Cross-Verification Results</h2>
                         </div>
                         <div class="p-6 space-y-5">
                             <div>
-                                <label class="field-label">Doctor's Prescription (PDF) <span class="req">*</span></label>
-                                <div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all relative" id="rxUploadZone">
-                                    <input type="file" id="rxFileInput" accept="application/pdf" class="absolute inset-0 opacity-0 cursor-pointer">
-                                    <i class="fa-solid fa-file-medical text-3xl text-slate-300 mb-2"></i>
-                                    <p class="font-bold text-slate-600 text-sm" id="rxUploadLabel">Click or drag the doctor's prescription PDF here</p>
-                                    <p class="text-xs text-slate-400 mt-1">One prescription usually covers every test/treatment line above — we cross-check each billed test against it</p>
-                                </div>
-                                <div id="rxProgressWrap" class="hidden space-y-2 mt-3">
-                                    <div class="flex justify-between text-xs font-semibold text-slate-500"><span id="rxProgLabel">Processing...</span><span id="rxProgPct">0%</span></div>
-                                    <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div id="rxProgFill" class="h-full bg-dmrc-blue transition-all" style="width:0%"></div></div>
-                                </div>
-                            </div>
-
-                            <div>
                                 <div class="flex items-center justify-between mb-3">
-                                    <h3 class="font-bold text-sm text-slate-700">Line-wise Verification Results</h3>
+                                    <h3 class="font-bold text-sm text-slate-700">Verification Results</h3>
                                     <button type="button" id="reverifyAllBtn" class="text-xs font-bold text-blue-600 hover:underline"><i class="fa-solid fa-rotate"></i> Re-verify All Lines</button>
                                 </div>
                                 <div id="verifyResults" class="space-y-3">
-                                    <p class="text-xs text-slate-400 italic bg-slate-50 rounded-lg p-4 text-center">Upload a bill PDF for each line item and the prescription above to run cross-verification.</p>
+                                    <p class="text-xs text-slate-400 italic bg-slate-50 rounded-lg p-4 text-center">Upload a bill and prescription PDF for each line item to run cross-verification.</p>
                                 </div>
                             </div>
                         </div>

@@ -10,9 +10,7 @@ let lineCounter = 0;
 // { billFile, billChunks, testId, verifyResult: {...} }
 const lineState = {};
 
-// Shared prescription state
-let rxFile = null;
-let rxChunks = null;
+// Shared prescription state (removed, now per-line)
 
 const billBody = document.getElementById('billBody');
 const reimbursementTypeEl = document.getElementById('reimbursementType');
@@ -91,13 +89,14 @@ function testOptions() {
   return testMasterData.map(t => `<option value="${t.test_id}">${t.canonical_name}</option>`).join('');
 }
 function hospitalOptions() {
-  return hospitalsData.map(h => `<option value="${h.hospital_name}">${h.hospital_name}</option>`).join('');
+  const sorted = [...hospitalsData].sort((a, b) => a.hospital_name.localeCompare(b.hospital_name));
+  return sorted.map(h => `<option value="${h.hospital_name}">${h.hospital_name}</option>`).join('') + `<option value="Other">Other</option>`;
 }
 
 function addBillLine() {
   lineCounter++;
   const lineNo = lineCounter;
-  lineState[lineNo] = { billFile: null, billChunks: null, testId: testMasterData[0]?.test_id || '', verifyResult: null };
+  lineState[lineNo] = { billFile: null, billChunks: null, rxFile: null, rxChunks: null, testNames: '', verifyResult: null };
 
   const tr = document.createElement('tr');
   tr.dataset.line = lineNo;
@@ -110,7 +109,18 @@ function addBillLine() {
         <option value="EMPANELLED">EMPANELLED</option>
       </select>
     </td>
-    <td><select class="empanelledHospital">${hospitalOptions()}</select></td>
+    <td>
+      <div class="flex flex-col gap-1">
+        <select class="rxHospitalSelect text-xs p-1 border rounded w-full"><option value="">-- Rx Hospital --</option>${hospitalOptions()}</select>
+        <input type="text" class="rxHospitalInput hidden text-xs p-1 border rounded w-full" placeholder="Enter Rx Hospital">
+      </div>
+    </td>
+    <td>
+      <div class="flex flex-col gap-1">
+        <select class="billHospitalSelect text-xs p-1 border rounded w-full"><option value="">-- Bill Hospital --</option>${hospitalOptions()}</select>
+        <input type="text" class="billHospitalInput hidden text-xs p-1 border rounded w-full" placeholder="Enter Bill Hospital">
+      </div>
+    </td>
     <td>
       <select class="billTreatmentType">
         <option value="Pathology/Diagnostics">Pathology/Diagnostics</option>
@@ -121,8 +131,10 @@ function addBillLine() {
         <option value="Other">Other</option>
       </select>
     </td>
-    <td><select class="testSelect">${testOptions()}</select></td>
+    <td><input type="text" class="testInput" placeholder="e.g. CBC, X-Ray"></td>
     <td><input type="text" class="billNumber" placeholder="Bill #"></td>
+    <td><input type="text" class="rxNumber" placeholder="Rx Ref #"></td>
+    <td><input type="date" class="rxDate"></td>
     <td><input type="date" class="billDate"></td>
     <td><input type="number" class="deductions" value="0" min="0" step="0.01"></td>
     <td><input type="number" class="requestedAmount" value="0" min="0" step="0.01"></td>
@@ -130,19 +142,32 @@ function addBillLine() {
       <div class="relative">
         <label class="flex items-center gap-1.5 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg px-2 py-1.5 cursor-pointer w-full">
           <i class="fa-solid fa-paperclip"></i>
-          <span class="line-pdf-label truncate">Attach PDF</span>
+          <span class="line-pdf-label truncate">Attach Bill</span>
           <input type="file" class="line-pdf-input hidden" accept="application/pdf">
         </label>
         <div class="line-pdf-status text-[10px] mt-1 text-slate-400">No file yet</div>
       </div>
     </td>
+    <td>
+      <div class="relative">
+        <label class="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg px-2 py-1.5 cursor-pointer w-full">
+          <i class="fa-solid fa-paperclip"></i>
+          <span class="line-rx-label truncate">Attach Rx</span>
+          <input type="file" class="line-rx-input hidden" accept="application/pdf">
+        </label>
+        <div class="line-rx-status text-[10px] mt-1 text-slate-400">No file yet</div>
+      </div>
+    </td>
   `;
   billBody.appendChild(tr);
-  tr.querySelector('.testSelect').value = lineState[lineNo].testId;
-  tr.querySelector('.testSelect').addEventListener('change', (e) => {
-    lineState[lineNo].testId = e.target.value;
+  tr.querySelector('.testInput').value = lineState[lineNo].testNames || '';
+  tr.querySelector('.testInput').addEventListener('input', (e) => {
+    lineState[lineNo].testNames = e.target.value;
     lineState[lineNo].verifyResult = null;
     renderVerifyResults();
+  });
+  tr.querySelector('.testInput').addEventListener('blur', () => {
+    verifyLine(lineNo);
   });
 
   tr.querySelector('.requestedAmount').addEventListener('input', recalcTotal);
@@ -159,8 +184,36 @@ function addBillLine() {
     }
   });
 
+  const rxDateEl = tr.querySelector('.rxDate');
+  rxDateEl.addEventListener('change', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    if (rxDateEl.value > today) {
+      rxDateEl.style.borderColor = '#dc2626';
+      showToast('Prescription date cannot be in the future', 'error');
+    } else {
+      rxDateEl.style.borderColor = '#16a34a';
+    }
+  });
+
   const pdfInput = tr.querySelector('.line-pdf-input');
   pdfInput.addEventListener('change', () => { if (pdfInput.files[0]) handleLineFile(lineNo, tr, pdfInput.files[0]); });
+
+  const rxPdfInput = tr.querySelector('.line-rx-input');
+  rxPdfInput.addEventListener('change', () => { if (rxPdfInput.files[0]) handleLineRxFile(lineNo, tr, rxPdfInput.files[0]); });
+
+  const rxSelect = tr.querySelector('.rxHospitalSelect');
+  const rxInput = tr.querySelector('.rxHospitalInput');
+  rxSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'Other') rxInput.classList.remove('hidden');
+    else rxInput.classList.add('hidden');
+  });
+
+  const billSelect = tr.querySelector('.billHospitalSelect');
+  const billInput = tr.querySelector('.billHospitalInput');
+  billSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'Other') billInput.classList.remove('hidden');
+    else billInput.classList.add('hidden');
+  });
 
   recalcTotal();
 }
@@ -193,16 +246,17 @@ document.getElementById('calculateBtn').addEventListener('click', recalcTotal);
 function getBillLines() {
   return Array.from(document.querySelectorAll('#billBody tr')).map(tr => {
     const lineNo = tr.dataset.line;
-    const testId = tr.querySelector('.testSelect').value;
-    const test = testMasterById[testId];
     return {
       lineNo,
       hospitalStatus: tr.querySelector('.hospitalStatus').value,
-      empanelledHospital: tr.querySelector('.empanelledHospital').value,
-      nameOfHospital: tr.querySelector('.empanelledHospital').value,
+      rxHospital: tr.querySelector('.rxHospitalSelect').value === 'Other' ? tr.querySelector('.rxHospitalInput').value : tr.querySelector('.rxHospitalSelect').value,
+      empanelledHospital: tr.querySelector('.billHospitalSelect').value === 'Other' ? tr.querySelector('.billHospitalInput').value : tr.querySelector('.billHospitalSelect').value,
+      nameOfHospital: tr.querySelector('.billHospitalSelect').value === 'Other' ? tr.querySelector('.billHospitalInput').value : tr.querySelector('.billHospitalSelect').value,
       billTreatmentType: tr.querySelector('.billTreatmentType').value,
-      descriptionOfExpense: test ? test.canonical_name : '',
+      descriptionOfExpense: tr.querySelector('.testInput').value,
       billNumber: tr.querySelector('.billNumber').value,
+      prescriptionRefNumber: tr.querySelector('.rxNumber').value,
+      prescriptionDate: tr.querySelector('.rxDate').value,
       billDate: tr.querySelector('.billDate').value,
       deductions: tr.querySelector('.deductions').value,
       remarksDeduction: '',
@@ -241,73 +295,80 @@ async function handleLineFile(lineNo, tr, file) {
   }
 }
 
-// ---------- PRESCRIPTION UPLOAD ----------
-const rxUploadZone = document.getElementById('rxUploadZone');
-const rxFileInput = document.getElementById('rxFileInput');
-const rxProgressWrap = document.getElementById('rxProgressWrap');
-const rxProgLabel = document.getElementById('rxProgLabel');
-const rxProgPct = document.getElementById('rxProgPct');
-const rxProgFill = document.getElementById('rxProgFill');
-
-rxFileInput.addEventListener('change', () => { if (rxFileInput.files[0]) handleRxFile(rxFileInput.files[0]); });
-rxUploadZone.addEventListener('dragover', e => { e.preventDefault(); rxUploadZone.classList.add('border-blue-400'); });
-rxUploadZone.addEventListener('dragleave', () => rxUploadZone.classList.remove('border-blue-400'));
-rxUploadZone.addEventListener('drop', e => {
-  e.preventDefault(); rxUploadZone.classList.remove('border-blue-400');
-  if (e.dataTransfer.files[0]?.type === 'application/pdf') handleRxFile(e.dataTransfer.files[0]);
-});
-
-async function handleRxFile(file) {
+async function handleLineRxFile(lineNo, tr, file) {
   if (file.size > 2 * 1024 * 1024) { showToast('File exceeds 2MB limit', 'error'); return; }
-  rxFile = file;
-  rxChunks = null;
-  document.getElementById('rxUploadLabel').textContent = file.name;
-  document.getElementById('uploadedPrescription').checked = true;
-  rxProgressWrap.classList.remove('hidden');
-  setRxProgress(0, 'Reading...');
+  lineState[lineNo].rxFile = file;
+  lineState[lineNo].rxChunks = null;
+  lineState[lineNo].verifyResult = null;
+
+  const labelEl = tr.querySelector('.line-rx-label');
+  const statusEl = tr.querySelector('.line-rx-status');
+  labelEl.textContent = file.name;
+  statusEl.textContent = 'Reading PDF...';
+  statusEl.className = 'line-rx-status text-[10px] mt-1 text-amber-600 font-semibold';
+
   try {
-    const { chunks } = await Verifier.processFile(file, setRxProgress);
-    rxChunks = chunks;
-    setRxProgress(100, 'Ready');
-    showToast('Prescription processed — re-verifying all lines against it', 'success');
-    verifyAllLines();
+    const { chunks } = await Verifier.processFile(file, (pct, label) => {
+      statusEl.textContent = `${label} (${Math.round(pct)}%)`;
+    });
+    lineState[lineNo].rxChunks = chunks;
+    statusEl.textContent = 'Ready — verifying...';
+    statusEl.className = 'line-rx-status text-[10px] mt-1 text-emerald-600 font-semibold';
+    document.getElementById('uploadedPrescription').checked = true;
+    verifyLine(lineNo);
   } catch (err) {
-    showToast('Could not process the prescription PDF', 'error');
-    rxProgressWrap.classList.add('hidden');
+    statusEl.textContent = 'Could not read this PDF';
+    statusEl.className = 'line-rx-status text-[10px] mt-1 text-rose-600 font-semibold';
   }
-}
-function setRxProgress(pct, label) {
-  rxProgFill.style.width = pct + '%';
-  rxProgPct.textContent = Math.round(pct) + '%';
-  rxProgLabel.textContent = label;
 }
 
 // ---------- CROSS-VERIFICATION ----------
 function verifyLine(lineNo) {
   const state = lineState[lineNo];
   if (!state) return;
-  const test = testMasterById[state.testId];
   const tr = document.querySelector(`#billBody tr[data-line="${lineNo}"]`);
-  if (!tr || !test) return;
+  if (!tr) return;
 
   const billNumber = tr.querySelector('.billNumber').value;
+  const rxNumber = tr.querySelector('.rxNumber').value;
+  const rxDate = tr.querySelector('.rxDate').value;
   const billDate = tr.querySelector('.billDate').value;
   const requestedAmount = tr.querySelector('.requestedAmount').value;
   const patientName = requestForEl.value;
 
-  const result = { lineNo, testName: test.canonical_name };
+  const testNamesStr = state.testNames || '';
+  const testNames = testNamesStr.split(',').map(s => s.trim()).filter(s => s);
+
+  const result = { lineNo, testName: testNamesStr };
+
+  function evaluateTests(chunks) {
+    if (!chunks || testNames.length === 0) return { status: 'pending', results: [] };
+    let allFound = true;
+    let anyFound = false;
+    let results = [];
+    for (const t of testNames) {
+      const m = Verifier.matchLabelInChunks(t, chunks, 0.40);
+      results.push({ test: t, ...m });
+      if (m.status === 'verified') anyFound = true;
+      if (m.status === 'failed' || m.status === 'pending' || m.status === 'partial') allFound = false;
+    }
+    return {
+      status: allFound ? 'verified' : (anyFound ? 'partial' : 'failed'),
+      results
+    };
+  }
 
   if (state.billChunks) {
-    result.testInBill = Verifier.matchLabelInChunks(test.bill_label || test.canonical_name, state.billChunks, 0.35);
-    result.patientInBill = Verifier.matchLabelInChunks(patientName, state.billChunks, 0.35);
+    result.testInBill = evaluateTests(state.billChunks);
+    result.patientInBill = Verifier.matchLabelInChunks(patientName, state.billChunks, 0.45);
     result.billNumberMatch = billNumber
-      ? Verifier.verifyValue(billNumber, { anchor: 'bill', inputType: 'text' }, state.billChunks, 0.4, 100)
+      ? Verifier.verifyValue(billNumber, { anchor: 'bill', inputType: 'text', noAnchorNeeded: true }, state.billChunks, 0.4, 100)
       : { status: 'pending' };
     result.billDateMatch = billDate
-      ? Verifier.verifyValue(billDate, { anchor: 'date', inputType: 'date' }, state.billChunks, 0.4, 100)
+      ? Verifier.verifyValue(billDate, { anchor: 'date', inputType: 'date', noAnchorNeeded: true }, state.billChunks, 0.01, 100)
       : { status: 'pending' };
     result.amountMatch = requestedAmount && parseFloat(requestedAmount) > 0
-      ? Verifier.verifyValue(requestedAmount, { anchor: 'amount', inputType: 'amount', noAnchorNeeded: true }, state.billChunks, 0.4, 100)
+      ? Verifier.verifyValue(requestedAmount, { anchor: 'amount', inputType: 'amount', noAnchorNeeded: true }, state.billChunks, 0.01, 100)
       : { status: 'pending' };
   } else {
     result.testInBill = { status: 'pending' };
@@ -317,19 +378,35 @@ function verifyLine(lineNo) {
     result.amountMatch = { status: 'pending' };
   }
 
-  if (rxChunks) {
-    result.testInRx = Verifier.matchLabelInChunks(test.prescription_label || test.canonical_name, rxChunks, 0.35);
-    result.patientInRx = Verifier.matchLabelInChunks(patientName, rxChunks, 0.35);
+  if (state.rxChunks) {
+    result.testInRx = evaluateTests(state.rxChunks);
+    result.patientInRx = Verifier.matchLabelInChunks(patientName, state.rxChunks, 0.45);
+    result.rxNumberMatch = rxNumber
+      ? Verifier.verifyValue(rxNumber, { anchor: 'prescription', inputType: 'text', noAnchorNeeded: true }, state.rxChunks, 0.4, 100)
+      : { status: 'pending' };
+    result.rxDateMatch = rxDate
+      ? Verifier.verifyValue(rxDate, { anchor: 'date', inputType: 'date', noAnchorNeeded: true }, state.rxChunks, 0.01, 100)
+      : { status: 'pending' };
   } else {
     result.testInRx = { status: 'pending' };
     result.patientInRx = { status: 'pending' };
+    result.rxNumberMatch = { status: 'pending' };
+    result.rxDateMatch = { status: 'pending' };
   }
 
-  // Overall line status: verified only if the test was found in BOTH documents
-  const statuses = [result.testInBill.status, result.testInRx.status];
+  // Overall line status: consider tests and all other fields
+  const otherFields = [
+    result.patientInBill, result.patientInRx,
+    result.billNumberMatch, result.rxNumberMatch,
+    result.billDateMatch, result.rxDateMatch,
+    result.amountMatch
+  ].filter(f => f && f.status !== 'pending');
+
+  const statuses = [result.testInBill.status, result.testInRx.status, ...otherFields.map(f => f.status)];
+  
   if (statuses.includes('failed')) result.overall = 'failed';
+  else if (statuses.includes('partial')) result.overall = 'partial';
   else if (statuses.every(s => s === 'verified')) result.overall = 'verified';
-  else if (statuses.some(s => s === 'verified' || s === 'partial')) result.overall = 'partial';
   else result.overall = 'pending';
 
   state.verifyResult = result;
@@ -358,10 +435,9 @@ function renderVerifyResults() {
   container.innerHTML = lines.map(lineNo => {
     const state = lineState[lineNo];
     const r = state.verifyResult;
-    const test = testMasterById[state.testId];
     if (!r) {
       return `<div class="border border-slate-100 rounded-xl p-4 bg-slate-50/40">
-        <p class="text-xs font-bold text-slate-500">Line ${String(lineNo).padStart(4, '0')} — ${test ? test.canonical_name : ''}</p>
+        <p class="text-xs font-bold text-slate-500">Line ${String(lineNo).padStart(4, '0')} — ${state.testNames || ''}</p>
         <p class="text-[11px] text-slate-400 mt-1">Attach this line's bill PDF to verify.</p>
       </div>`;
     }
@@ -372,18 +448,65 @@ function renderVerifyResults() {
       pending: '<span class="verify-badge verify-pending">Awaiting documents</span>',
     }[r.overall];
 
+    const testNamesStr = state.testNames || '';
+    const testNamesList = testNamesStr.split(',').map(s => s.trim()).filter(s => s);
+    
+    let inBoth = [];
+    let onlyInBill = [];
+    let onlyInRx = [];
+    let inNeither = [];
+
+    const getTestStatus = (resObj, t) => {
+      if (!resObj || !resObj.results) return 'pending';
+      const found = resObj.results.find(x => x.test === t);
+      return found ? found.status : 'pending';
+    };
+
+    for (const t of testNamesList) {
+      const bStatus = getTestStatus(r.testInBill, t);
+      const rStatus = getTestStatus(r.testInRx, t);
+      
+      const bFound = bStatus === 'verified';
+      const rFound = rStatus === 'verified';
+      
+      // If a document is pending (not uploaded), we don't want to show tests as "Missing" from it.
+      // We will only calculate groupings if BOTH documents are processed.
+      // But if user wants to see it immediately, we assume pending means not found.
+      if (bFound && rFound) inBoth.push(t);
+      else if (bFound && !rFound) onlyInBill.push(t);
+      else if (!bFound && rFound) onlyInRx.push(t);
+      else inNeither.push(t);
+    }
+
+    const renderTestList = (title, list, colorCls, bgCls) => {
+      if (list.length === 0) return '';
+      return `<div class="mb-2 p-2 rounded-lg ${bgCls}">
+        <p class="font-bold uppercase text-[9px] mb-1 ${colorCls}">${title}</p>
+        <ul class="list-disc pl-3 text-[10px] text-slate-700 space-y-0.5 font-medium">${list.map(t => `<li>${t}</li>`).join('')}</ul>
+      </div>`;
+    };
+
+    const combinedTestsHtml = `<div class="flex flex-col w-full pr-4">
+      ${renderTestList('In both Invoice & Rx', inBoth, 'text-emerald-700', 'bg-emerald-50/50')}
+      ${renderTestList('Only in Invoice', onlyInBill, 'text-amber-700', 'bg-amber-50/50')}
+      ${renderTestList('Only in Rx', onlyInRx, 'text-amber-700', 'bg-amber-50/50')}
+      ${renderTestList('Not found in either', inNeither, 'text-rose-700', 'bg-rose-50/50')}
+      ${testNamesList.length === 0 ? '<span class="text-[10px] text-slate-400 italic">No tests entered</span>' : ''}
+    </div>`;
+
     return `<div class="border border-slate-200 rounded-xl overflow-hidden">
       <div class="px-4 py-2.5 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
         <p class="text-xs font-bold text-slate-700">Line ${String(lineNo).padStart(4, '0')} — ${r.testName}</p>
         ${overallBanner}
       </div>
-      <div class="p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-[11px]">
-        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Test in Bill</p>${badge(r.testInBill)}</div>
-        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Test in Prescription</p>${badge(r.testInRx)}</div>
+      <div class="p-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-11 gap-3 text-[11px]">
+        <div class="col-span-2 sm:col-span-4 lg:col-span-4"><p class="text-slate-400 font-bold uppercase text-[9px] mb-2">Test Verification Summary</p>${combinedTestsHtml}</div>
         <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Patient (Bill)</p>${badge(r.patientInBill)}</div>
         <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Patient (Rx)</p>${badge(r.patientInRx)}</div>
         <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Bill Number</p>${badge(r.billNumberMatch)}</div>
+        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Rx Ref Number</p>${badge(r.rxNumberMatch)}</div>
         <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Bill Date</p>${badge(r.billDateMatch)}</div>
+        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Rx Date</p>${badge(r.rxDateMatch)}</div>
         <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Amount</p>${badge(r.amountMatch)}</div>
       </div>
     </div>`;
@@ -412,13 +535,9 @@ document.getElementById('claimForm').addEventListener('submit', async (e) => {
       return;
     }
   }
-  const missingPdf = Object.keys(lineState).some(l => !lineState[l].billFile);
+  const missingPdf = Object.keys(lineState).some(l => !lineState[l].billFile || !lineState[l].rxFile);
   if (missingPdf) {
-    showToast('Please attach a bill/invoice PDF for every line item', 'error');
-    return;
-  }
-  if (!rxFile) {
-    showToast('Please upload the doctor\'s prescription PDF', 'error');
+    showToast('Please attach both bill and prescription PDFs for every line item', 'error');
     return;
   }
 
@@ -451,23 +570,26 @@ document.getElementById('claimForm').addEventListener('submit', async (e) => {
   try {
     const { claimId } = await apiPost('/claims', payload);
 
-    // Upload the prescription once, tagged at claim level
-    const rxForm = new FormData();
-    rxForm.append('file', rxFile);
-    rxForm.append('claimId', claimId);
-    rxForm.append('attachmentLevel', 'Prescription');
-    await apiUpload(rxForm);
-
-    // Upload each line's own bill/invoice PDF, tagged with its line number
+    // Upload each line's own bill/invoice and prescription PDF
     for (const lineNo of Object.keys(lineState)) {
-      const file = lineState[lineNo].billFile;
-      if (!file) continue;
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('claimId', claimId);
-      fd.append('attachmentLevel', 'Bill Line');
-      fd.append('lineNumber', lineNo);
-      await apiUpload(fd);
+      const bFile = lineState[lineNo].billFile;
+      if (bFile) {
+        const fd = new FormData();
+        fd.append('file', bFile);
+        fd.append('claimId', claimId);
+        fd.append('attachmentLevel', 'Bill Line');
+        fd.append('lineNumber', lineNo);
+        await apiUpload(fd);
+      }
+      const rFile = lineState[lineNo].rxFile;
+      if (rFile) {
+        const fd = new FormData();
+        fd.append('file', rFile);
+        fd.append('claimId', claimId);
+        fd.append('attachmentLevel', 'Prescription');
+        fd.append('lineNumber', lineNo);
+        await apiUpload(fd);
+      }
     }
 
     showToast(`Claim ${claimId} submitted successfully!`, 'success');

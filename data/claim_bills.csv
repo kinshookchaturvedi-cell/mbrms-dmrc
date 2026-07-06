@@ -1,1 +1,3 @@
 bill_id,claim_id,line_no,hospital_status,empanelled_hospital,name_of_hospital,bill_treatment_type,description_of_expense,bill_number,bill_date,deductions,remarks_deduction,admissible_amount,requested_amount,verification_status
+BIL0001,CLM0001,0001,EMPANELLED,Kailash Deepak Hospital,Kailash Deepak Hospital,Pathology/Diagnostics,"URINE ROUTINE (AUTOMATED), CULTURE URINE (RAPID)",LAB/M/25/177217,2026-03-25,0,,,560,failed
+BIL0002,CLM0001,0002,EMPANELLED,Kailash Deepak Hospital,Kailash Deepak Hospital,Pathology/Diagnostics,"CBC, C-REACTIVE PROTEIN, SGPT, CULTURE BLOOD (RAPID), RAPID TEST FOR MALARIAL ANTIGEN, HB1AC, CLYMO FORTE DRY",LAB/M/26/8418,2026-04-17,0,,,1260,partial

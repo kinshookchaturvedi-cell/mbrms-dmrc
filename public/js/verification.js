@@ -69,7 +69,7 @@ const Verifier = (() => {
 
   function fuseFind(query, candidates, threshold) {
     const fuse = new Fuse(candidates, {
-      keys: ['text'], threshold, ignoreLocation: true, minMatchCharLength: 3,
+      keys: ['text'], threshold, ignoreLocation: true, ignoreFieldNorm: true, minMatchCharLength: 3,
       includeMatches: true, includeScore: true,
     });
     // Fuse's `threshold` option alone does not reliably cut off matches for short
@@ -149,6 +149,27 @@ const Verifier = (() => {
     if (!label || !label.trim()) return { status: 'pending' };
     if (!chunks.length) return { status: 'pending' };
 
+    // Pass 0: Exact substring match (very fast and reliable for acronyms/short tests)
+    const lowerLabel = label.toLowerCase().trim();
+    for (const chunk of chunks) {
+      const lowerText = chunk.text.toLowerCase();
+      const idx = lowerText.indexOf(lowerLabel);
+      if (idx !== -1) {
+        const snippet = buildSnippet(chunk.text, idx, idx + label.length, idx, idx + label.length);
+        return { status: 'verified', snippet, page: chunk.page, method: 'exact' };
+      }
+    }
+
+    // Pass 0.5: Alphanumeric exact match (for things like C.B.C matching CBC)
+    const alphaLabel = lowerLabel.replace(/[^a-z0-9]/g, '');
+    if (alphaLabel.length >= 3) {
+      for (const chunk of chunks) {
+        if (chunk.text.toLowerCase().replace(/[^a-z0-9]/g, '').includes(alphaLabel)) {
+          return { status: 'verified', snippet: label, page: chunk.page, method: 'alpha' };
+        }
+      }
+    }
+
     // Pass 1: direct fuzzy match of the whole label against each chunk
     const direct = fuseFind(label, chunks, threshold);
     if (direct.length > 0) {
@@ -160,27 +181,30 @@ const Verifier = (() => {
       return { status: 'verified', snippet, page: h.item.page, method: 'direct' };
     }
 
-    // Pass 2: token-overlap fallback — match each significant word independently.
-    // Minimum length 4 (not 3) keeps short/generic words like "mri" or "usg" from
-    // fuzzy-matching unrelated text and producing false positives.
-    const tokens = label.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 4 && !STOP_WORDS.has(w));
+    // Pass 2: fallback to token overlap (evaluated PER LINE to avoid cross-test combination)
+    const tokens = label.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w));
     if (tokens.length === 0) return { status: 'failed' };
 
-    let matchedCount = 0, lastSnippet = '', lastPage = null;
-    for (const token of tokens) {
-      const hits = fuseFind(token, chunks, threshold);
-      if (hits.length > 0) {
-        matchedCount++;
-        const pos = getMatchPos(hits[0].item.text, token, hits[0]);
-        if (pos) {
-          lastSnippet = buildSnippet(hits[0].item.text, pos.start, pos.end, pos.start, pos.end);
-          lastPage = hits[0].item.page;
+    let bestRatio = 0, lastSnippet = null, lastPage = null;
+    for (const chunk of chunks) {
+      const lines = chunk.text.split('\n');
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        let matchedCount = 0;
+        for (const t of tokens) {
+          if (line.toLowerCase().includes(t)) matchedCount++;
+        }
+        const ratio = matchedCount / tokens.length;
+        if (ratio > bestRatio) {
+          bestRatio = ratio;
+          lastSnippet = line.trim();
+          lastPage = chunk.page;
         }
       }
     }
-    const ratio = matchedCount / tokens.length;
-    if (ratio >= 0.6) return { status: 'verified', snippet: lastSnippet, page: lastPage, method: 'token', ratio };
-    if (ratio > 0) return { status: 'partial', snippet: lastSnippet, page: lastPage, method: 'token', ratio };
+
+    if (bestRatio >= 0.80) return { status: 'verified', snippet: lastSnippet, page: lastPage, method: 'token', ratio: bestRatio };
+    if (bestRatio > 0.40) return { status: 'partial', snippet: lastSnippet, page: lastPage, method: 'token', ratio: bestRatio };
     return { status: 'failed' };
   }
 
@@ -189,17 +213,6 @@ const Verifier = (() => {
     userVal = (userVal || '').toString().trim();
     if (!userVal || !chunks.length) return { status: 'pending' };
 
-    if (field.noAnchorNeeded) {
-      const hits = fuseFind(userVal, chunks, threshold);
-      if (hits.length > 0) {
-        const h = hits[0];
-        const pos = getMatchPos(h.item.text, userVal, h);
-        if (pos) return { status: 'verified', snippet: buildSnippet(h.item.text, pos.start, pos.start, pos.start, pos.end), page: h.item.page };
-        return { status: 'verified', page: h.item.page };
-      }
-      return { status: 'failed' };
-    }
-
     let searchValues = [userVal];
     if (field.inputType === 'date') {
       searchValues = parseDateVariants(userVal);
@@ -207,7 +220,39 @@ const Verifier = (() => {
     }
     if (field.inputType === 'amount') {
       const numeric = userVal.replace(/[^0-9.]/g, '');
-      searchValues = [userVal, numeric, parseFloat(numeric).toLocaleString('en-IN')];
+      const numFloat = parseFloat(numeric);
+      searchValues = [
+        userVal, 
+        numeric, 
+        numFloat.toLocaleString('en-IN'),
+        numFloat.toFixed(2),
+        numFloat.toLocaleString('en-IN', {minimumFractionDigits: 2})
+      ];
+      searchValues = [...new Set(searchValues)];
+    }
+
+    if (field.noAnchorNeeded) {
+      for (const variant of searchValues) {
+        const lowerVariant = variant.toLowerCase();
+        
+        // Pass 0: Exact substring match
+        for (const chunk of chunks) {
+          const idx = chunk.text.toLowerCase().indexOf(lowerVariant);
+          if (idx !== -1) {
+            return { status: 'verified', snippet: buildSnippet(chunk.text, idx, idx + variant.length, idx, idx + variant.length), page: chunk.page };
+          }
+        }
+        
+        // Pass 1: Fuzzy match
+        const hits = fuseFind(variant, chunks, threshold);
+        if (hits.length > 0) {
+          const h = hits[0];
+          const pos = getMatchPos(h.item.text, variant, h);
+          if (pos) return { status: 'verified', snippet: buildSnippet(h.item.text, pos.start, pos.start, pos.start, pos.end), page: h.item.page };
+          return { status: 'verified', page: h.item.page };
+        }
+      }
+      return { status: 'failed' };
     }
 
     const anchorHits = fuseFind(field.anchor, chunks, threshold);

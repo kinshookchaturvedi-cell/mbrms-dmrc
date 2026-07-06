@@ -1,1 +1,5 @@
 attachment_id,claim_id,attachment_level,line_number,file_name,file_extension,attachment_size,file_path,uploaded_date
+ATT0001,CLM0001,Bill Line,1,urine urine culture.pdf,pdf,558.5 KB,/uploads/1783330466535_urine_urine_culture.pdf,2026-07-06
+ATT0002,CLM0001,Prescription,1,prescription.pdf,pdf,475.6 KB,/uploads/1783330466548_prescription.pdf,2026-07-06
+ATT0003,CLM0001,Bill Line,2,"cbc, etc..pdf",pdf,611.1 KB,/uploads/1783330466558_cbc__etc..pdf,2026-07-06
+ATT0004,CLM0001,Prescription,2,prescription.pdf,pdf,475.6 KB,/uploads/1783330466569_prescription.pdf,2026-07-06
