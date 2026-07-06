@@ -143,69 +143,148 @@ const Verifier = (() => {
   // GLYCOSYLATED HEMOGLOBIN" vs "Glycosylated Haemoglobin (HbA1C),EDTA") mean a
   // single whole-string fuzzy pass often won't hit, even though a human would clearly
   // recognise it as the same test.
-  const STOP_WORDS = new Set(['and', 'the', 'for', 'serum', 'test', 'level', 'with', 'tab', 'cap', 'examination']);
+  const STOP_WORDS = new Set(['and', 'the', 'for', 'serum', 'test', 'level', 'with', 'tab', 'cap', 'examination', 'of']);
+
+  const TEST_ALIASES = {
+    'cbc': ['complete blood count', 'blood picture', 'hemogram'],
+    'crp': ['c-reactive protein', 'c reactive protein'],
+    'sgpt': ['alt', 'alanine aminotransferase'],
+    'sgot': ['ast', 'aspartate aminotransferase'],
+    'lft': ['liver function test'],
+    'kft': ['kidney function test'],
+    'rft': ['renal function test'],
+    'tft': ['thyroid function test'],
+    'lipid': ['lipid profile'],
+    'fbs': ['fasting blood sugar'],
+    'ppbs': ['post prandial blood sugar'],
+    'hba1c': ['glycated hemoglobin', 'glycosylated hemoglobin', 'hb1ac'],
+    'tsh': ['thyroid stimulating hormone'],
+    't3': ['triiodothyronine'],
+    't4': ['thyroxine'],
+    'esr': ['erythrocyte sedimentation rate'],
+    'bun': ['blood urea nitrogen'],
+    'wbc': ['white blood cell count', 'total leucocyte count', 'tlc'],
+    'rbc': ['red blood cell count'],
+    'plt': ['platelet count'],
+    'ecg': ['electrocardiogram', 'ekg'],
+    'usg': ['ultrasound', 'ultrasonography'],
+    'mri': ['magnetic resonance imaging'],
+    'ct': ['computed tomography'],
+    'xray': ['x-ray', 'radiograph'],
+    'rtpcr': ['rt-pcr', 'reverse transcription polymerase chain reaction'],
+    'hiv': ['human immunodeficiency virus'],
+    'hcv': ['hepatitis c virus'],
+    'hbsag': ['hepatitis b surface antigen'],
+    'vdrl': ['venereal disease research laboratory'],
+    'tmt': ['treadmill test'],
+    'pft': ['pulmonary function test'],
+    'eeg': ['electroencephalogram'],
+    'dexa': ['dual-energy x-ray absorptiometry', 'bone mineral density'],
+    'pap': ['papanicolaou smear'],
+    'fnac': ['fine needle aspiration cytology'],
+    'urine rm': ['urine routine microscopy', 'urine r/m', 'urine routine', 'urine r/m & c/s', 'urine routine (automated)'],
+    'culture urine': ['culture, urine', 'urine culture', 'urine c/s']
+  };
+
+  function getLabelVariants(label) {
+    const variants = new Set([label.toLowerCase().trim()]);
+    const lower = label.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+
+    // 1. Generate dynamic acronym from full form (e.g. "COMPLETE BLOOD COUNT" -> "cbc")
+    const words = label.toLowerCase().split(/[\s\-]+/).filter(w => w.length > 0 && !STOP_WORDS.has(w));
+    if (words.length >= 2) {
+      const acronym = words.map(w => w[0]).join('');
+      if (acronym.length >= 2) variants.add(acronym);
+    }
+    
+    // 2. Map aliases (both ways)
+    for (const [short, longs] of Object.entries(TEST_ALIASES)) {
+      if (lower === short || lower === short.replace(/[^a-z0-9]/g, '')) {
+        longs.forEach(l => variants.add(l));
+      }
+      for (const l of longs) {
+        if (lower === l.replace(/[^a-z0-9\s]/g, '')) {
+          variants.add(short);
+          longs.forEach(lo => variants.add(lo));
+        }
+      }
+    }
+    return Array.from(variants);
+  }
 
   function matchLabelInChunks(label, chunks, threshold = 0.35) {
-    if (!label || !label.trim()) return { status: 'pending' };
-    if (!chunks.length) return { status: 'pending' };
+    if (!chunks || chunks.length === 0) return { status: 'pending' };
 
-    // Pass 0: Exact substring match (very fast and reliable for acronyms/short tests)
-    const lowerLabel = label.toLowerCase().trim();
-    for (const chunk of chunks) {
-      const lowerText = chunk.text.toLowerCase();
-      const idx = lowerText.indexOf(lowerLabel);
-      if (idx !== -1) {
-        const snippet = buildSnippet(chunk.text, idx, idx + label.length, idx, idx + label.length);
-        return { status: 'verified', snippet, page: chunk.page, method: 'exact' };
-      }
-    }
+    const variants = getLabelVariants(label);
+    let bestResult = { status: 'failed', ratio: 0 };
 
-    // Pass 0.5: Alphanumeric exact match (for things like C.B.C matching CBC)
-    const alphaLabel = lowerLabel.replace(/[^a-z0-9]/g, '');
-    if (alphaLabel.length >= 3) {
+    for (const variantLabel of variants) {
+      const lowerLabel = variantLabel.toLowerCase().trim();
+      const alphaLabel = lowerLabel.replace(/[^a-z0-9]/g, '');
+
+      // Pass 0: Exact substring match (very fast and reliable for acronyms/short tests)
       for (const chunk of chunks) {
-        if (chunk.text.toLowerCase().replace(/[^a-z0-9]/g, '').includes(alphaLabel)) {
-          return { status: 'verified', snippet: label, page: chunk.page, method: 'alpha' };
+        const lowerText = chunk.text.toLowerCase();
+        const idx = lowerText.indexOf(lowerLabel);
+        if (idx !== -1) {
+          const snippet = buildSnippet(chunk.text, idx, idx + variantLabel.length, idx, idx + variantLabel.length);
+          return { status: 'verified', snippet, page: chunk.page, method: 'exact' };
+        }
+      }
+
+      // Pass 0.5: Alphanumeric exact match (for things like C.B.C matching CBC)
+      if (alphaLabel.length >= 2) {
+        for (const chunk of chunks) {
+          if (chunk.text.toLowerCase().replace(/[^a-z0-9]/g, '').includes(alphaLabel)) {
+            return { status: 'verified', snippet: variantLabel, page: chunk.page, method: 'alpha' };
+          }
+        }
+      }
+
+      // Pass 1: direct fuzzy match of the whole label against each chunk
+      const direct = fuseFind(variantLabel, chunks, threshold);
+      if (direct.length > 0) {
+        const h = direct[0];
+        const pos = getMatchPos(h.item.text, variantLabel, h);
+        if (pos) {
+          return { status: 'verified', snippet: buildSnippet(h.item.text, pos.start, pos.start, pos.start, pos.end), page: h.item.page, method: 'direct' };
+        }
+        return { status: 'verified', snippet: variantLabel, page: h.item.page, method: 'direct' };
+      }
+
+      // Pass 2: fallback to token overlap (evaluated PER LINE to avoid cross-test combination)
+      const tokens = lowerLabel.split(/[^a-z0-9]+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w));
+      if (tokens.length > 0) {
+        let bestRatio = 0, lastSnippet = null, lastPage = null;
+        for (const chunk of chunks) {
+          const lines = chunk.text.split('\n');
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            let matchedCount = 0;
+            for (const t of tokens) {
+              if (line.toLowerCase().includes(t)) matchedCount++;
+            }
+            const ratio = matchedCount / tokens.length;
+            if (ratio > bestRatio) {
+              bestRatio = ratio;
+              lastSnippet = line.trim();
+              lastPage = chunk.page;
+            }
+          }
+        }
+
+        if (bestRatio > bestResult.ratio) {
+          if (bestRatio >= 0.80) {
+            bestResult = { status: 'verified', snippet: lastSnippet, page: lastPage, method: 'token', ratio: bestRatio };
+            return bestResult; // Immediate return if verified
+          } else if (bestRatio > 0.40) {
+            bestResult = { status: 'partial', snippet: lastSnippet, page: lastPage, method: 'token', ratio: bestRatio };
+          }
         }
       }
     }
 
-    // Pass 1: direct fuzzy match of the whole label against each chunk
-    const direct = fuseFind(label, chunks, threshold);
-    if (direct.length > 0) {
-      const h = direct[0];
-      const pos = getMatchPos(h.item.text, label, h);
-      const snippet = pos
-        ? buildSnippet(h.item.text, pos.start, pos.end, pos.start, pos.end)
-        : esc(h.item.text.slice(0, 100)) + '...';
-      return { status: 'verified', snippet, page: h.item.page, method: 'direct' };
-    }
-
-    // Pass 2: fallback to token overlap (evaluated PER LINE to avoid cross-test combination)
-    const tokens = label.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w));
-    if (tokens.length === 0) return { status: 'failed' };
-
-    let bestRatio = 0, lastSnippet = null, lastPage = null;
-    for (const chunk of chunks) {
-      const lines = chunk.text.split('\n');
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        let matchedCount = 0;
-        for (const t of tokens) {
-          if (line.toLowerCase().includes(t)) matchedCount++;
-        }
-        const ratio = matchedCount / tokens.length;
-        if (ratio > bestRatio) {
-          bestRatio = ratio;
-          lastSnippet = line.trim();
-          lastPage = chunk.page;
-        }
-      }
-    }
-
-    if (bestRatio >= 0.80) return { status: 'verified', snippet: lastSnippet, page: lastPage, method: 'token', ratio: bestRatio };
-    if (bestRatio > 0.40) return { status: 'partial', snippet: lastSnippet, page: lastPage, method: 'token', ratio: bestRatio };
-    return { status: 'failed' };
+    return bestResult;
   }
 
   // field: { anchor, inputType: 'text'|'date'|'amount', noAnchorNeeded, proximity }

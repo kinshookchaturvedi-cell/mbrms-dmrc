@@ -127,6 +127,7 @@ app.post('/api/claims', (req, res) => {
       admissible_amount: line.admissibleAmount || '',
       requested_amount: line.requestedAmount || '',
       verification_status: line.verificationStatus || 'pending',
+      verification_summary: line.verificationSummary || '',
     });
   });
 

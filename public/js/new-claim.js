@@ -263,6 +263,7 @@ function getBillLines() {
       requestedAmount: tr.querySelector('.requestedAmount').value,
       admissibleAmount: '',
       verificationStatus: lineState[lineNo]?.verifyResult?.overall || 'pending',
+      verificationSummary: lineState[lineNo]?.verifyResult ? JSON.stringify(lineState[lineNo].verifyResult) : '',
     };
   });
 }

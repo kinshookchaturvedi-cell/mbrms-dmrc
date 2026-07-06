@@ -49,7 +49,8 @@
         function render(data) {
             const { claim, bills, remarks, attachments, employee, dependents } = data;
 
-            const billsRows = bills.map(b => `
+            const billsRows = bills.map(b => {
+                const tr = `
                 <tr>
                     <td class="py-2 px-2">${b.line_no}</td>
                     <td class="py-2 px-2">${b.name_of_hospital}<br><span class="text-[10px] text-gray-400">${b.hospital_status}</span></td>
@@ -58,7 +59,11 @@
                     <td class="py-2 px-2">${fmtDate(b.bill_date)}</td>
                     <td class="py-2 px-2 text-right">₹${fmtCurrency(b.deductions)}</td>
                     <td class="py-2 px-2 text-right font-bold">₹${fmtCurrency(b.requested_amount)}</td>
-                </tr>`).join('') || '<tr><td colspan="7" class="py-6 text-center text-gray-400 italic">No bill line items</td></tr>';
+                </tr>`;
+                const summary = renderVerifySummaryForHR(b.verification_summary, b.line_no, b.description_of_expense);
+                const summaryRow = summary ? `<tr><td colspan="7" class="p-0 border-b border-gray-100 bg-slate-50/50 px-2 pb-2">${summary}</td></tr>` : '';
+                return tr + summaryRow;
+            }).join('') || '<tr><td colspan="7" class="py-6 text-center text-gray-400 italic">No bill line items</td></tr>';
 
             const attachmentsHtml = attachments.length ? attachments.map(a => `
                 <a href="${a.file_path}" target="_blank" class="flex items-center gap-2 text-xs font-semibold text-blue-700 hover:underline bg-blue-50 rounded-lg px-3 py-2">
@@ -166,6 +171,79 @@
                 load();
             } catch (err) {
                 showToast(err.error || 'Failed to update claim', 'error');
+            }
+        }
+
+        function badge(result, verifiedLabel, failedLabel) {
+            if (!result || result.status === 'pending') return `<span class="verify-badge verify-pending">Pending</span>`;
+            const labels = { pending: 'Pending', verified: verifiedLabel || 'Found', partial: 'Partial Match', failed: failedLabel || 'Not Found' };
+            const cls = `verify-${result.status}`;
+            return `<span class="verify-badge ${cls}" title="${result.snippet ? result.snippet.replace(/<[^>]+>/g, '') : ''}">${labels[result.status]}</span>`;
+        }
+
+        function renderVerifySummaryForHR(summaryStr, lineNo, testName) {
+            if (!summaryStr) return '';
+            try {
+                const r = JSON.parse(summaryStr);
+                const overallBanner = {
+                    verified: '<span class="verify-badge verify-verified"><i class="fa-solid fa-check"></i> Confirmed in both documents</span>',
+                    partial: '<span class="verify-badge verify-partial"><i class="fa-solid fa-triangle-exclamation"></i> Partially confirmed — check manually</span>',
+                    failed: '<span class="verify-badge verify-failed"><i class="fa-solid fa-xmark"></i> Mismatch — test not found in one or both documents</span>',
+                    pending: '<span class="verify-badge verify-pending">Awaiting documents</span>',
+                }[r.overall || 'pending'];
+
+                const testNamesList = (testName || '').split(',').map(s => s.trim()).filter(s => s);
+                let inBoth = [], onlyInBill = [], onlyInRx = [], inNeither = [];
+
+                const getTestStatus = (resObj, t) => {
+                    if (!resObj || !resObj.results) return 'pending';
+                    const found = resObj.results.find(x => x.test === t);
+                    return found ? found.status : 'pending';
+                };
+
+                for (const t of testNamesList) {
+                    const bStatus = getTestStatus(r.testInBill, t);
+                    const rStatus = getTestStatus(r.testInRx, t);
+                    if (bStatus === 'verified' && rStatus === 'verified') inBoth.push(t);
+                    else if (bStatus === 'verified' && rStatus !== 'verified') onlyInBill.push(t);
+                    else if (bStatus !== 'verified' && rStatus === 'verified') onlyInRx.push(t);
+                    else inNeither.push(t);
+                }
+
+                const renderTestList = (title, list, colorCls, bgCls) => {
+                    if (list.length === 0) return '';
+                    return `<div class="mb-2 p-2 rounded-lg ${bgCls}">
+                        <p class="font-bold uppercase text-[9px] mb-1 ${colorCls}">${title}</p>
+                        <ul class="list-disc pl-3 text-[10px] text-slate-700 space-y-0.5 font-medium">${list.map(t => `<li>${t}</li>`).join('')}</ul>
+                    </div>`;
+                };
+
+                const combinedTestsHtml = `<div class="flex flex-col w-full pr-4">
+                    ${renderTestList('In both Invoice & Rx', inBoth, 'text-emerald-700', 'bg-emerald-50/50')}
+                    ${renderTestList('Only in Invoice', onlyInBill, 'text-amber-700', 'bg-amber-50/50')}
+                    ${renderTestList('Only in Rx', onlyInRx, 'text-amber-700', 'bg-amber-50/50')}
+                    ${renderTestList('Not found in either', inNeither, 'text-rose-700', 'bg-rose-50/50')}
+                    ${testNamesList.length === 0 ? '<span class="text-[10px] text-slate-400 italic">No tests entered</span>' : ''}
+                </div>`;
+
+                return `<div class="mt-2 border border-slate-200 rounded-xl overflow-hidden bg-white mb-2">
+                    <div class="px-4 py-2 bg-slate-100 flex items-center justify-between flex-wrap gap-2">
+                        <p class="text-[11px] font-bold text-slate-700"><i class="fa-solid fa-robot text-dmrcBlue mr-1"></i> System Verification Results</p>
+                        ${overallBanner}
+                    </div>
+                    <div class="p-3 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-11 gap-3 text-[11px]">
+                        <div class="col-span-2 sm:col-span-4 lg:col-span-4"><p class="text-slate-400 font-bold uppercase text-[9px] mb-2">Tests</p>${combinedTestsHtml}</div>
+                        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Patient (Bill)</p>${badge(r.patientInBill)}</div>
+                        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Patient (Rx)</p>${badge(r.patientInRx)}</div>
+                        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Bill #</p>${badge(r.billNumberMatch)}</div>
+                        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Rx Ref #</p>${badge(r.rxNumberMatch)}</div>
+                        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Bill Date</p>${badge(r.billDateMatch)}</div>
+                        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Rx Date</p>${badge(r.rxDateMatch)}</div>
+                        <div><p class="text-slate-400 font-bold uppercase text-[9px] mb-1">Amount</p>${badge(r.amountMatch)}</div>
+                    </div>
+                </div>`;
+            } catch (e) {
+                return '';
             }
         }
 
