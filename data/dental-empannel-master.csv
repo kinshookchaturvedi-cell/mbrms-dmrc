@@ -1,0 +1,51 @@
+Sr.N.,Hospital /Labs/ Clinics,Address ,Category ,NABH/NON-NABH,Applicable Rate,CGHS Status,NON-CGHS DISCOUNT
+1,Jain Dental Clinic,"F-1/9, Mandir Marg, Near Happy English School, Block E, Krishna Nagar, Delhi-110051",Dental,NABH,DMRC current ceiling limit for 8 services & for rest dental services 15% discount,NON-CGHS,15
+2,Jain Dental Clinic,"22 Radhey Shyam Park, Near Musical Park Parwana Road,Delhi-110051",Dental,NABH,DMRC current ceiling limit for 8 services & for rest dental services 15% discount,NON-CGHS,15
+3,Dr. Sekhri Dental & Implant Clinic,"3, Sukh Vihar(Tikona Park) Near Gagan Vihar, Delhi-51",Dental,NON-NABH,CGHS rates for CGHS listed items & 10% discount on non-CGHS listed items',CGHS,10
+4,The Healing Touch Dental Care,"1st floor, behind mother dairy, chetak complex, pocket B & E Market, Dilshad Garden, Delhi-110095",Dental,NABH,CGHS rates for CGHS listed items & 25 % discount on non CGHS listed items,CGHS,25
+5,Smile 4 Sure Dental Clinic,"Shop No. 1 DDA Market Bank Enclave, delhi- 110092",Dental,NABH,CGHS rates for CGHS listed items & 10 % discount on non CGHS listed items,CGHS,10
+6,Smirk Dental & implant centre,"G-80, first floor, Vijay Chowk, Laxmi Nagar,Delhi -110092",Dental,NABH,CGHS rates for CGHS listed items & 20 % discount on non CGHS listed items,CGHS,20
+7,DR BUDHIRAJA'S ORO DENTAL CARE CLINIC,"52-A OPPOSITE MOTHER DAIRY PLANT , PANDAV NAGAR I.P.EXTENSION DELHI-110092",Dental,NON-NABH,CGHS Rates for CGHS listed items and Hospital Rates for Non-CGHS items,CGHS,0
+8,Nayar Dental Care Centre Pvt. Ltd,"G-16, Preet Vihar, delhi-92",Dental,NON-NABH,"CGHS rates for CGHS listed items & 20 % discount on non CGHS listed items except drugs, consumables & Implants & other outsourced investigations or procedure",CGHS,20
+9,ESTHETIC DENTAL CLINIC,"FG 1/2-B VIKASPURI, NEW DELHI-110018",Dental,NON-NABH,CGHS rates for CGHS listed items & Hospital rates for non CGHS listed items,CGHS,0
+10,DELHI DENTAL HUB,"9,GF, STATE BANK NAGAR, PASCHIM VIHAR, OUTER RING ROAD, OPP. PILLAR NO-77, OP. MEERA BAGH RED LIGHT, ND-63",Dental,NON-NABH,CGHS rates for all CGHS listed dental items and 15% Discount on Hospital rates for non CGHS listed items,CGHS,15
+11,DENTAL QUE,"55, WEST AVENUE RAOD, WEST PUNJABI BAGH, ND-26",Dental,NON-NABH,DMRC current ceiling limit for 8 services & for rest dental services Hospital rates.,NON-CGHS,0
+12,Raahat Dental Clinic,"285, DDA Plots Pkt-1 Sec-23 Dwarka New Delhi-110075",Dental,NON-NABH,Hospital Rates,NON-CGHS,0
+13,Wisdom Dental Maxllofacial & Implant clinic,"F-46-47, Manish Global Mall, Opp. Mount Carmel School, Sec-22, Dwarka, New Delhi-110077",Dental,NON-NABH,CGHS rates for CGHS listed items & 20 % discount on non CGHS listed items,CGHS,20
+14,Sharma Dental ,"RZ-156/A, Dada Chhatriwala Marg, Gali no. 9, Raj Nagar-1 Palam Colony, New Delhi",Dental,NON-NABH,CGHS rates for CGHS listed items & 20 % discount on non CGHS listed items,CGHS,20
+15,"Dentinova Dental Care Centre, Janakpuri","A-3/6 JANAK PURI MOTA SINGH MARG, DELHI-85",Dental,NABH,CGHS-Rates for CGHS Listed items and 20% Discount on Hospital Rates for Non-CGHS Items,CGHS,20
+16,MAXX DENTAL & HEALTH CLINIC Rohini,"BASEMENT PLOT NO-02 PKT.8/A NEAR MANAV CHOWK SEC-15 ROHINI, DELHI-89",Dental,NON-NABH,CGHS Rates for CGHS Items and 5% Discount on Hospital Rates for Non-CGHS items,CGHS,5
+17,"Kapil Dental Clinic, Rohini","A-1/681, Sec-6 Rohini Delhi-85",Dental,NABH,CGHS Rates for CGHS listed Items and 20% Discount on Hospital Rates for Non-CGHS items.,CGHS,20
+18,"Dental World   Orthodontic and Implant Centre, Palam Colony Delhi","WZ-172, Stree No-1 Sadh Nagar, Palam Colony Delhi-110045",Dental,NON-NABH,CGHS Rates for CGHS Listed Items and 20% Discount on Hospital rates for Non-CGHS Items,CGHS,20
+19,"Balaji Dental Centre, Paschim Vihar","B-2/11, First Floor, Paschim Vihar, New Delhi-110063",Dental,NABH,Hospital Rates,NON-CGHS,
+20,Dr.Gupta's Dental & Braces Clinic,"C-7/97, Sec-8, Rohini, Delhi-110085",Dental,NON-NABH,CGHS rates for CGHS listed items & 25 % discount on non CGHS listed items,CGHS,25
+21,Rx Multispecialty Dental Clinic ,"2649 (Basement) Hudson Lane, GTB Nagar, Delhi 110009",Dental,NON-NABH,CGHS rates for CGHS listed items & 20 % discount on non CGHS listed items,CGHS,20
+22,Agrasen Dental Wellness Center Tri Nagar,"553/37, Onkar Nagar-C, Tri-Nagar Delhi-110035",Dental,NON-NABH,CGHS rates for CGHS listed Items and 20% Discount on Hospital Rates for Non-CGHS Items.,CGHS,20
+23,Gupta Multi Speciality Dental Clinic,"QU-132 B, Pitampura, New Delhi-110034 ",Dental,NON-NABH,CGHS Rates for CGHS listed items and 20% Discount on Hospital rates for Non-CGHS Items,CGHS,20
+24,"Leela Dental Clinic, Majlis",B-39 Main Road Majlis Park Delhi-110033,Dental,NABH,CGHS-Rates for CGHS listed items and 10% Discount on Hospital Rates for Non-CGHS Items,CGHS,10
+25,"Leela Dental Clinic, Hakikat Ngr",H No. 9 Gate No-1 Hakikat Nagar kingsway camp Delhi-110009,Dental,NON-NABH,CGHS-Rates for CGHS listed items and 10% Discount on Hospital Rates for Non-CGHS Items,CGHS,10
+26,GREEN PARK DENTAL,"H-4, Green Park Extension, New Delhi-16",Dental,NABH,Hospital rates with 10% discount,NON-CGHS,
+27,MULTI SPECIALITY DENTAL CLINIC,"113-B, Sheikh Sarai-2K, New Delhi-110017",Dental,NON-NABH,Hospital Rates ,NON-CGHS,0
+28,T32 R K PURAM DENTAL CLINIC,"1-C VIVEKANAND MARKET , SEC-1, R K PURAM , HYATT, MUNIRKA ROAD, ND-66",Dental,NON-NABH,CGHS Rates for CGHS listed items & 10 % discount on Hospital rates for non CGHS listed items.,CGHS,10
+29,ADVANCED DENTAL CARE,"SHOP NO-31, RATI RAM PARK, NAYA BAZAR, OPP JYOTI MEMORIAL HOSPITAL, TURA MANDI, NAJAFGARH, ND-43",Dental,NON-NABH,CGHS Rates For CGHS Listed Items & Discounted/Hospital Rates On Non CGHS Listed Items,CGHS,0
+30,South Point Dentistry,"K-14-B, Sheikh sarai Phase-II, Near Authority, New Delhi-110017",Dental,NON-NABH,CGHS Rates for CGHS listed items & Hospital rates with 18% discount on non CGHS listed items,CGHS,18
+31,Vinayak Dental Clinic & Orthoodontic centre kalkaji,G 2A Basement Kalkaji New Delhi-110019,Dental,NON-NABH,CGHS Rates for CGHS listed Items and 20% Discount on Hospital Rates for Non-CGHS items.,CGHS,20
+32,Vinayak Dental Clinic & Orthoodontic centre Badarpur,B-10 Tajpur Road Badarpur Border New Delhi-110044,Dental,NON-NABH,CGHS Rates for CGHS listed Items and 20% Discount on Hospital Rates for Non-CGHS items.,CGHS,20
+33,"Delhi Dental and Implant Centre, Jasola ","Delhi ENT Hospital, Near Urdu Bhawan Jasola Institutional Area, Delhi-110025",Dental,NON-NABH,Consultation and IOPA X-Ray: CGHS Rates         Special Discounted Rates for DMRC for rest of the Dental services          ,CGHS,
+34,Jain Dental Clinic,"92 Bhagat Singh Market, Gole Market, New Delhi – 110001",Dental,NON-NABH,DMRC current ceiling limit for 8 services & for rest dental services 15% discount,NON-CGHS,15
+35,INDIDENT DENTAL CLINIC & IMPLANTOLOGY RESEARCH CENTRE ,"3E/15, Jhandewalan Extn., New Delhi-55",Dental,NABH,On DMRC Dental Rates,NON-CGHS,0
+36,DELHI DENTAL & MEDICAL CENTRE,"19/32, OLD RAJINDER NAGAR, ND-60",Dental,NON-NABH,CGHS for all CGHS listed items and 5-10% discount on hospital rates for rest of the items,CGHS,10
+37,DR ASHOK DENTISTREE DENTAL CLINIC,U22_JCS R K Ashram metro station New Delhi-110001,Dental,NABH,CGHS rates for CGHS listed items and hospital rates for rest of the items.,CGHS,0
+38,Kailash Dental,"53-54,Ground floor, South Patel Nagar, New Delhi- 110008",Dental,NON-NABH,CGHS Rates for CGHS listed items & 15% discount on non CGHS listed items,CGHS,15
+39,Oral Care Dental Health & Orthodontic centre,"63/2, Basement, old rajinder nagar, karol bagh metro station, gate no. 7, New delhi-110060",Dental,NABH,CGHS rates for CGHS listed items & 15% discount on non-CGHS listed items,CGHS,15
+40,Muskan Dental Care,"11/26, West Patel Nagar Delhi-110008",Dental,NABH,CGHS Rates for CGHS Listed Items and 20% Discount on Hospital Rates for Non-CGHS Items,CGHS,20
+41,The Caring Touch,R-721 NEW RAJINDER NAGAR ND-110060,Dental ,NON-NABH,CGHS rates for CGHS listed items & Hospital Rates for non-CGHS listed items,CGHS,0
+42,Dental Destination,House No-2300 Sector-16 Faridabad Haryana,Dental,NABH,CGHS rates for CGHS listed items and 25% Discount on Hospital rates for Non-CGHS items,CGHS,25
+43,Sapphire Dental Care,Shop No-18 Shyam Palace  Prakashpuri Chowk Railway Road Gurugram,Dental,NON-NABH,CGHS rates for CGHS listed Items & 20% discount on Hospital rates for non CGHS listed items,CGHS,20
+44,Jain Dental Clinic,"Plot no.293, Sector 4, Near Chander Laxmi Hospital, Vaishali, Ghaziabad.",Dental,NABH,DMRC current ceiling limit for 8 services & for rest dental services 15% discount,NON-CGHS,15
+45,"Dr. Saigals' Dental Clinic, Ghaziabad",KD-20 Kavi Nagar Ghaziabad,Dental,NABH,CGHS rates for CGHS listed items and 18% Discount on Hospital rates for Non-CGHS items,CGHS,18
+46,Jyoti Dental Care Centre,Shop No-13& 14  3/44 Sec-5 Aman Banquet Hall Rajender Nagar Ghaziabad,Dental,NABH,CGHS Rates for CGHS listed items and 20% Discount on Hospital Rates for Non-CGHS Items,CGHS,20
+47,SHINE & SMILE DENTAL CLINIC,B-11 B BLOCK MARKET SURYA NAGAR GHAZIABAD UP-201011,Dental ,NON-NABH,CGHS Rates for CGHS listed items and 15% discount for nonlisted items,CGHS,15
+48,Jain Dental Clinic,"T-36, Sector 11, Noida",Dental,NABH,DMRC current ceiling limit for 8 services & for rest dental services 15% discount,NON-CGHS,15
+49,Nayar Dental Care Centre Pvt. Ltd,"E-25, Sector-27, (Near Indira Market), Noida, UP",Dental,NON-NABH,Hospital Rates,NON-CGHS,0
+50,Nayar Dental Care Centre Pvt. Ltd,Maya Plaza Bailey Road Patna,Dental,NON-NABH,10% discount on DMRC Approved rates(10% discount on  rest services also) ,NON-CGHS,10

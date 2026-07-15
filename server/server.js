@@ -66,6 +66,8 @@ app.get('/api/employee/:id', (req, res) => {
 });
 
 app.get('/api/hospitals', (req, res) => res.json(findRows('hospitals')));
+app.get('/api/dental-hospitals', (req, res) => res.json(findRows('dental-empannel-master')));
+app.get('/api/dental-cghs-rates', (req, res) => res.json(findRows('dental_cghsRates')));
 app.get('/api/reimbursement-types', (req, res) => res.json(findRows('reimbursement_types')));
 app.get('/api/bill-treatment-types', (req, res) => res.json(findRows('bill_treatment_types')));
 app.get('/api/test-master', (req, res) => res.json(findRows('test_master')));

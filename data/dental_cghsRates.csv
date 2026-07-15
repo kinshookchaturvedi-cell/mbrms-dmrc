@@ -1,0 +1,22 @@
+CGHS Code ,CGHS TREATMENT PROCEDURE/INVESTIGATION LIST ,NABH LIMIT,NON_NABH LIMIT,Super Speciality LIMIT
+DP042,Crown lengthening - Per Tooth,425,500,500
+DP043,Crown - PMMA Crown,850,1000,1000
+DP044,Crown - All Metal-Nickel Free,1700,2000,2000
+DP045,Crown - Metal with Ceramic Facing,2550,3000,3000
+DP046,Crown - Recementation,510,600,600
+DP047,Crown - Removal,425,500,500
+DP028,Composite - Occlusal Pit/Class I,425,500,500
+DP029,Composite -Class I with buccal extension/Class II Class III/Class IV/Class VI/Diastema Closure/MOD,850,1000,1000
+DP010,Extraction - Normal Tooth,340,400,400
+DP011,Complicated Extraction per tooth under LA,680,800,800
+DP012,Extraction Impacted - Soft tissue/ 3rd Molar/wisdom tooth extraction,1700,2000,2000
+DP013,"Multiple Extraction and Treatment Procedures for Special Children, Patients with Systemic Diseases, Patient with Special Needs Which Requires Admission and Treatment Under GA",5100,6000,6000
+DP014,Extraction - Orthodontic Extraction,638,750,750
+DP016,Extraction Impacted – Bony,4250,5000,5000
+DP030,RCT-Single Rooted tooth,1700,2000,2000
+DP031,RCT Multiple root and/ canal tooth,2550,3000,3000
+DP032,Re-RCT - Anterior,2125,2500,2500
+DP033,Re-RCT - Posterior,2550,3000,3000
+DI001,Intraoral Periapical (IOPA) Radiograph X-ray/RVG(Single Film),170,200,200
+DI002,Intraoral Occlusal/Bite Wing X-Ray,255,300,300
+DI003,Digital OPG with X ray film/ CD,425,500,500

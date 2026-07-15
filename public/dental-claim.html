@@ -49,7 +49,7 @@
                         <i class="fa-solid fa-angle-right text-slate-300 text-[9px]"></i>
                         <span class="text-slate-400">New Claim</span>
                     </nav>
-                    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Create Request — Medical Reimbursement</h1>
+                    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Create Request — Dental Reimbursement</h1>
                     <p class="text-sm text-slate-400 mt-0.5">Fill in claim details exactly as required for HR &amp; Finance processing.</p>
                 </div>
 
@@ -61,22 +61,18 @@
                             <span class="w-6 h-6 rounded-full bg-dmrc-blue text-white text-[11px] font-black flex items-center justify-center">1</span>
                             <h2 class="font-black text-slate-900 text-sm uppercase tracking-wide">Claim Details</h2>
                         </div>
-                        <div class="p-6">
-                            <div class="w-full md:w-1/3 mb-6">
+                        <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div>
                                 <label class="field-label">Reimbursement Type <span class="req">*</span></label>
-                                <select id="reimbursementType" class="field-input" required>
-                                    <option value="">-- Select Reimbursement Type --</option>
+                                <select id="reimbursementType" class="field-input" required></select>
+                            </div>
+                            <div>
+                                <label class="field-label">Request Type <span class="req">*</span></label>
+                                <select id="requestType" class="field-input" required>
+                                    <option value="Claim">Claim</option>
+                                    <option value="Advance">Advance</option>
                                 </select>
                             </div>
-                            
-                            <div id="restOfSection1" class="hidden grid grid-cols-1 md:grid-cols-3 gap-5 pt-4 border-t border-slate-100">
-                                <div>
-                                    <label class="field-label">Request Type <span class="req">*</span></label>
-                                    <select id="requestType" class="field-input" required>
-                                        <option value="Claim">Claim</option>
-                                        <option value="Advance">Advance</option>
-                                    </select>
-                                </div>
                             <div>
                                 <label class="field-label">Requested Amount (₹)</label>
                                 <input id="requestedAmount" type="text" class="field-input" value="0.00" disabled>
@@ -133,13 +129,11 @@
                                     <input type="checkbox" id="uploadedReports" class="w-4 h-4 rounded text-blue-700"> Uploaded scanned copy of Reports
                                 </label>
                             </div>
-                            </div>
                         </div>
                     </section>
 
-                    <div id="restOfForm" class="hidden space-y-6">
-                        <!-- SECTION: Dependents -->
-                        <section class="bg-white border border-slate-200/60 rounded-2xl shadow-sm">
+                    <!-- SECTION: Dependents -->
+                    <section class="bg-white border border-slate-200/60 rounded-2xl shadow-sm">
                         <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
                             <span class="w-6 h-6 rounded-full bg-dmrc-blue text-white text-[11px] font-black flex items-center justify-center">2</span>
                             <h2 class="font-black text-slate-900 text-sm uppercase tracking-wide">Dependents</h2>
@@ -167,30 +161,10 @@
                                 <button type="button" id="calculateBtn" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-xs font-bold flex items-center gap-1.5"><i class="fa-solid fa-calculator"></i> Calculate</button>
                             </div>
                         </div>
-                        <div class="p-6 overflow-x-auto">
-                            <table class="claim-table" id="billTable">
-                                <thead>
-                                    <tr>
-                                        <th style="width:30px"><input type="checkbox" id="selectAllLines"></th>
-                                        <th>Line No</th>
-                                        <th>Hospital Status</th>
-                                        <th>Rx Hospital</th>
-                                        <th>Bill Hospital</th>
-                                        <th>Bill/Treatment Type</th>
-                                        <th style="min-width:210px">Test / Description of Expense</th>
-                                        <th>Bill Number</th>
-                                        <th>Rx Ref Number</th>
-                                        <th>Rx Date</th>
-                                        <th>Bill Date</th>
-                                        <th>Deductions (₹)</th>
-                                        <th>Requested Amount (₹)</th>
-                                        <th style="min-width:190px">Bill / Invoice PDF (this line)</th>
-                                        <th style="min-width:190px">Prescription PDF (this line)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="billBody"></tbody>
-                            </table>
-                            <p class="text-[11px] text-slate-400 mt-2"><i class="fa-solid fa-circle-info"></i> Each line item needs its own bill/invoice PDF — the receipt for that specific test or treatment.</p>
+                        <div class="p-6">
+                            <div id="billsContainer" class="space-y-4">
+                                <!-- Bill cards will be dynamically added here -->
+                            </div>
                         </div>
                     </section>
 
@@ -207,7 +181,7 @@
                                     <button type="button" id="reverifyAllBtn" class="text-xs font-bold text-blue-600 hover:underline"><i class="fa-solid fa-rotate"></i> Re-verify All Lines</button>
                                 </div>
                                 <div id="verifyResults" class="space-y-3">
-                                    <p class="text-xs text-slate-400 italic bg-slate-50 rounded-lg p-4 text-center">Upload a bill and prescription PDF for each line item to run cross-verification.</p>
+                                    <p class="text-xs text-slate-400 italic bg-slate-50 rounded-lg p-4 text-center">Upload documents and add items to run verification.</p>
                                 </div>
                             </div>
                         </div>
@@ -233,8 +207,6 @@
                             <i class="fa-solid fa-paper-plane"></i> Submit Claim
                         </button>
                     </div>
-                    
-                    </div> <!-- End of restOfForm -->
                 </form>
 
             </main>
@@ -243,7 +215,7 @@
 
     <script src="js/api.js"></script>
     <script src="js/verification.js"></script>
-    <script src="js/new-claim.js"></script>
+    <script src="js/dental-claim.js"></script>
 </body>
 
 </html>

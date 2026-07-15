@@ -41,7 +41,35 @@ async function init() {
     apiGet('/test-master'),
   ]);
 
-  reimbursementTypeEl.innerHTML = reimTypes.map(t => `<option value="${t.type_name}">${t.type_name}</option>`).join('');
+  reimbursementTypeEl.innerHTML = '<option value="">-- Select Reimbursement Type --</option>' + reimTypes.map(t => `<option value="${t.type_name}">${t.type_name}</option>`).join('');
+  
+  reimbursementTypeEl.addEventListener('change', () => {
+    if (reimbursementTypeEl.value === 'Medical-Dental') {
+      window.location.href = 'dental-claim.html';
+      return;
+    }
+    
+    if (reimbursementTypeEl.value) {
+      document.getElementById('restOfSection1').classList.remove('hidden');
+      document.getElementById('restOfForm').classList.remove('hidden');
+      reimbursementTypeEl.disabled = true;
+      reimbursementTypeEl.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+    } else {
+      document.getElementById('restOfSection1').classList.add('hidden');
+      document.getElementById('restOfForm').classList.add('hidden');
+    }
+  });
+
+  // pre-check on load
+  if (reimbursementTypeEl.value === 'Medical-Dental') {
+    window.location.href = 'dental-claim.html';
+    return;
+  }
+  if (reimbursementTypeEl.value) {
+    document.getElementById('restOfSection1').classList.remove('hidden');
+    document.getElementById('restOfForm').classList.remove('hidden');
+  }
+
   dependentsData = dep.dependents;
   hospitalsData = hospitals;
   testMasterData = testMaster.filter(t => t.canonical_name); // drop blank rows
