@@ -119,9 +119,11 @@ function updateItemPrice(row, bId) {
     const totalCap = price * teeth;
     cappingText.textContent = `Cap: ₹${totalCap}`;
     
-    const currentPrice = row.querySelector('.item-price').value;
-    if (!currentPrice || parseFloat(currentPrice) === 0) {
-      row.querySelector('.item-price').value = totalCap;
+    const priceInput = row.querySelector('.item-price');
+    priceInput.max = totalCap;
+    
+    if (parseFloat(priceInput.value || 0) > totalCap) {
+      priceInput.value = totalCap;
       recalcTotal();
     }
   } else {
@@ -330,7 +332,16 @@ function addItemToBill(bId, container) {
     updateItemPrice(div, bId);
   });
   div.querySelector('.item-price').addEventListener('blur', trgVerify);
-  div.querySelector('.item-price').addEventListener('input', recalcTotal);
+  div.querySelector('.item-price').addEventListener('input', (e) => {
+    if (e.target.max) {
+      const max = parseFloat(e.target.max);
+      const val = parseFloat(e.target.value || 0);
+      if (val > max) {
+        e.target.value = max;
+      }
+    }
+    recalcTotal();
+  });
 
   div.querySelector('.delete-item-btn').addEventListener('click', () => {
     delete billState[bId].items[iId];
@@ -374,23 +385,26 @@ function verifyBillItems(bId) {
     const iId = row.dataset.itemId;
     const expenseType = row.querySelector('.expenseType');
     const price = row.querySelector('.item-price').value;
-    const testName = (expenseType.options[expenseType.selectedIndex]?.text || '') + ' ' + row.querySelector('.item-desc').value;
+    const expText = expenseType.value ? expenseType.options[expenseType.selectedIndex]?.text : '';
+    const itemDesc = row.querySelector('.item-desc').value.trim();
+    const testName = (expText + ' ' + itemDesc).trim();
+    const verifyName = itemDesc || expText || testName;
 
-    const result = { bId, iId, testName: testName.trim() };
+    const result = { bId, iId, testName: testName };
 
     if (state.billChunks) {
       result.patientInBill = Verifier.matchLabelInChunks(patientName, state.billChunks, 0.45);
       result.billNumberMatch = billNumber ? Verifier.verifyValue(billNumber, { anchor: 'bill', inputType: 'text', noAnchorNeeded: true }, state.billChunks, 0.4, 100) : { status: 'pending' };
       result.billDateMatch = billDate ? Verifier.verifyValue(billDate, { anchor: 'date', inputType: 'date', noAnchorNeeded: true }, state.billChunks, 0.01, 100) : { status: 'pending' };
       result.amountMatch = price && parseFloat(price) > 0 ? Verifier.verifyValue(price, { anchor: 'amount', inputType: 'amount', noAnchorNeeded: true }, state.billChunks, 0.01, 100) : { status: 'pending' };
-      result.testInBill = result.testName ? { status: Verifier.matchLabelInChunks(result.testName, state.billChunks, 0.40).status } : { status: 'pending' };
+      result.testInBill = verifyName ? { status: Verifier.matchLabelInChunks(verifyName, state.billChunks, 0.40).status } : { status: 'pending' };
     } else {
       result.patientInBill = result.billNumberMatch = result.billDateMatch = result.amountMatch = result.testInBill = { status: 'pending' };
     }
 
     if (state.rxChunks) {
       result.patientInRx = Verifier.matchLabelInChunks(patientName, state.rxChunks, 0.45);
-      result.testInRx = result.testName ? { status: Verifier.matchLabelInChunks(result.testName, state.rxChunks, 0.40).status } : { status: 'pending' };
+      result.testInRx = verifyName ? { status: Verifier.matchLabelInChunks(verifyName, state.rxChunks, 0.40).status } : { status: 'pending' };
     } else {
       result.patientInRx = result.testInRx = { status: 'pending' };
     }
