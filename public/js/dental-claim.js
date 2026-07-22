@@ -69,19 +69,7 @@ async function init() {
 init();
 
 function getExpenseInputHtml() {
-  return "<select class='expenseType text-xs p-1 border rounded w-full'>" +
-    "<option value=''>-- Select --</option>" +
-    "<option value='CERAMIC CR'>Ceramic Crown</option>" +
-    "<option value='COMP. FILL'>Composite Filling</option>" +
-    "<option value='CROWNING'>Crowning Per Unit</option>" +
-    "<option value='EXTRACTION'>Extraction Per Tooth</option>" +
-    "<option value='FAC/DEC'>Extraction of Fractured/decayed Tooth</option>" +
-    "<option value='RCT-ANTR'>Root Canal Treatment Anterior</option>" +
-    "<option value='RCT-PSTR'>Root Canal Treatment Posterior</option>" +
-    "<option value='SURGICAL'>Surgical Extraction Of Tooth</option>" +
-    "<option value='TOOTH IMPL'>Tooth Implantation(Per Tooth)</option>" +
-    "<option value='X-RAY'>X-Ray</option>" +
-  "</select>";
+  return "<input type='text' class='expenseType text-xs p-1 border rounded w-full' placeholder='CGHS Code (e.g. DP042)'>";
 }
 
 function getHospitalInfo(hospitalName) {
@@ -90,7 +78,10 @@ function getHospitalInfo(hospitalName) {
 }
 
 function updateItemPrice(row, bId) {
-  const expenseType = row.querySelector('.expenseType').value;
+  const expenseTypeSelect = row.querySelector('.expenseType');
+  const cghsCode = expenseTypeSelect.value.trim();
+  const itemDescInput = row.querySelector('.item-desc');
+  
   const card = document.querySelector(".bill-card[data-bill-id='" + bId + "']");
   if (!card) return;
   const hospitalStatus = card.querySelector('.hospitalStatus').value;
@@ -98,15 +89,12 @@ function updateItemPrice(row, bId) {
   const nonEmpHosp = card.querySelector('.nameOfHospital').value;
   const hospitalName = hospitalStatus === 'Empanelled' ? empHosp : nonEmpHosp;
 
-  const expenseTypeSelect = row.querySelector('.expenseType');
-  const expenseTypeText = expenseTypeSelect.value ? expenseTypeSelect.options[expenseTypeSelect.selectedIndex]?.text : '';
-  const itemDesc = row.querySelector('.item-desc').value || '';
-  const testName = (expenseTypeText + ' ' + itemDesc).trim();
-
-  // ONLY search for the "item name" (itemDesc) as mentioned by the user for rate fetching
-  const rateRow = findBestRateMatch(itemDesc);
+  const rateRow = findBestRateMatch(cghsCode);
   const cappingText = row.querySelector('.capping-text');
+  
   if (rateRow) {
+    itemDescInput.value = rateRow['CGHS TREATMENT PROCEDURE/INVESTIGATION LIST '] || rateRow['CGHS TREATMENT PROCEDURE/INVESTIGATION LIST'] || '';
+    
     let price = parseFloat(rateRow['NON_NABH LIMIT'] || 0); // default
     const hospInfo = getHospitalInfo(hospitalName);
     if (hospInfo) {
@@ -127,36 +115,18 @@ function updateItemPrice(row, bId) {
       recalcTotal();
     }
   } else {
+    itemDescInput.value = '';
     if (cappingText) cappingText.textContent = '';
   }
 }
 
-function findBestRateMatch(searchQuery) {
-  if (!searchQuery || !searchQuery.trim()) return null;
-  
-  const query = searchQuery.toLowerCase().trim();
-  
-  const getRateName = (rate) => (rate['CGHS TREATMENT PROCEDURE/INVESTIGATION LIST '] || rate['CGHS TREATMENT PROCEDURE/INVESTIGATION LIST'] || '').toLowerCase();
-  
-  // 1. Try exact substring match first
+function findBestRateMatch(cghsCode) {
+  if (!cghsCode || !cghsCode.trim()) return null;
+  const query = cghsCode.toUpperCase().trim();
+  const getRateCode = (rate) => (rate['CGHS Code '] || rate['CGHS Code'] || '').toUpperCase();
   for (const rate of cghsRatesData) {
-    const rateName = getRateName(rate);
-    if (query.length >= 2 && rateName.includes(query)) return rate;
+    if (getRateCode(rate) === query) return rate;
   }
-
-  // 2. Fallback to fuzzy search
-  const fuse = new Fuse(cghsRatesData, {
-    keys: ['CGHS TREATMENT PROCEDURE/INVESTIGATION LIST ', 'CGHS TREATMENT PROCEDURE/INVESTIGATION LIST'],
-    threshold: 0.8,
-    ignoreLocation: true,
-    ignoreFieldNorm: true,
-    minMatchCharLength: 2,
-    includeScore: true
-  });
-  
-  const results = fuse.search(query);
-  if (results.length > 0) return results[0].item;
-  
   return null;
 }
 
@@ -312,23 +282,20 @@ function addItemToBill(bId, container) {
   div.dataset.itemId = iId;
   div.innerHTML = 
     "<div class='w-1/4'>" + getExpenseInputHtml() + "</div>" +
-    "<div class='w-1/4'><input type='text' class='field-input text-xs !py-1.5 item-desc' placeholder='Item Name (As mentioned in bill)'></div>" +
-    "<div class='w-[15%]'><input type='number' class='field-input text-xs !py-1.5 item-teeth' placeholder='Teeth (e.g. 2)' min='0'></div>" +
+    "<div class='w-1/4'><input type='text' class='field-input text-xs !py-1.5 item-desc' placeholder='Item Name (Auto-fetched)' readonly></div>" +
+    "<div class='w-[15%]'><input type='number' class='field-input text-xs !py-1.5 item-teeth' placeholder='Teeth (e.g. 2)' min='1' max='32'></div>" +
     "<div class='w-1/4 flex flex-col'><input type='number' class='field-input text-xs !py-1.5 item-price' placeholder='Price (₹)' value='0' min='0' step='0.01'><div class='capping-text text-[10px] text-emerald-600 font-bold text-right pr-2 min-h-[14px] mt-0.5'></div></div>" +
     "<button type='button' class='text-rose-400 hover:text-rose-600 delete-item-btn p-1 self-start mt-1.5'><i class='fa-solid fa-xmark'></i></button>";
   
   container.appendChild(div);
 
   const trgVerify = () => verifyBillItems(bId);
-  div.querySelector('.expenseType').addEventListener('change', () => {
+  div.querySelector('.expenseType').addEventListener('input', () => {
     updateItemPrice(div, bId);
-    trgVerify();
   });
-  div.querySelector('.item-desc').addEventListener('blur', () => {
-    updateItemPrice(div, bId);
-    trgVerify();
-  });
-  div.querySelector('.item-teeth').addEventListener('input', () => {
+  div.querySelector('.expenseType').addEventListener('blur', trgVerify);
+  div.querySelector('.item-teeth').addEventListener('input', (e) => {
+    if (parseInt(e.target.value) > 32) e.target.value = 32;
     updateItemPrice(div, bId);
   });
   div.querySelector('.item-price').addEventListener('blur', trgVerify);
@@ -385,26 +352,26 @@ function verifyBillItems(bId) {
     const iId = row.dataset.itemId;
     const expenseType = row.querySelector('.expenseType');
     const price = row.querySelector('.item-price').value;
-    const expText = expenseType.value ? expenseType.options[expenseType.selectedIndex]?.text : '';
+    const cghsCode = expenseType.value.trim();
     const itemDesc = row.querySelector('.item-desc').value.trim();
-    const testName = (expText + ' ' + itemDesc).trim();
-    const verifyName = itemDesc || expText || testName;
+    const testName = cghsCode ? (cghsCode + (itemDesc ? ' - ' + itemDesc : '')) : '';
+    const verifyName = cghsCode; // Verify exactly by CGHS Code
 
-    const result = { bId, iId, testName: testName };
+    const result = { bId, iId, testName: testName || 'Unknown Item' };
 
     if (state.billChunks) {
       result.patientInBill = Verifier.matchLabelInChunks(patientName, state.billChunks, 0.45);
       result.billNumberMatch = billNumber ? Verifier.verifyValue(billNumber, { anchor: 'bill', inputType: 'text', noAnchorNeeded: true }, state.billChunks, 0.4, 100) : { status: 'pending' };
       result.billDateMatch = billDate ? Verifier.verifyValue(billDate, { anchor: 'date', inputType: 'date', noAnchorNeeded: true }, state.billChunks, 0.01, 100) : { status: 'pending' };
       result.amountMatch = price && parseFloat(price) > 0 ? Verifier.verifyValue(price, { anchor: 'amount', inputType: 'amount', noAnchorNeeded: true }, state.billChunks, 0.01, 100) : { status: 'pending' };
-      result.testInBill = verifyName ? { status: Verifier.matchLabelInChunks(verifyName, state.billChunks, 0.40).status } : { status: 'pending' };
+      result.testInBill = verifyName ? { status: Verifier.matchLabelInChunks(verifyName, state.billChunks, 0.10).status } : { status: 'pending' }; // lower threshold for exact match usually gives better result for exact codes or you can write a strict exact matcher
     } else {
       result.patientInBill = result.billNumberMatch = result.billDateMatch = result.amountMatch = result.testInBill = { status: 'pending' };
     }
 
     if (state.rxChunks) {
       result.patientInRx = Verifier.matchLabelInChunks(patientName, state.rxChunks, 0.45);
-      result.testInRx = verifyName ? { status: Verifier.matchLabelInChunks(verifyName, state.rxChunks, 0.40).status } : { status: 'pending' };
+      result.testInRx = verifyName ? { status: Verifier.matchLabelInChunks(verifyName, state.rxChunks, 0.10).status } : { status: 'pending' };
     } else {
       result.patientInRx = result.testInRx = { status: 'pending' };
     }
