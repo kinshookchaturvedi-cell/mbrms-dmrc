@@ -1,16 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMRC - Review Claim</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css">
-    <script>
-        tailwind.config = { theme: { extend: { colors: { dmrcBlue: '#002B7F', dmrcRed: '#E31D23', bgLight: '#F8FAFC' } } } }
-    </script>
+head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMRC - Review Claim</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Client-side verification & OCR dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
+  <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+  <script src="js/handwritten-verification.js"></script>
+  <script src="js/verification.js"></script>
+
+  <script>
+    tailwind.config = { theme: { extend: { colors: { dmrcBlue: '#002B7F', dmrcRed: '#E31D23', bgLight: '#F8FAFC' } } } }
+  </script>
 </head>
 
 <body class="bg-bgLight text-gray-800 font-sans antialiased min-h-screen flex flex-col">
