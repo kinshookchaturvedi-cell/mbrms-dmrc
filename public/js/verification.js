@@ -58,7 +58,7 @@ const Verifier = (() => {
 
       for (let p = 1; p <= totalPages; p++) {
         const page = await pdf.getPage(p);
-        const viewport = page.getViewport({ scale: 2.0 });
+        const viewport = page.getViewport({ scale: 3.0 });
         const canvas = document.createElement('canvas');
         canvas.width = viewport.width;
         canvas.height = viewport.height;
