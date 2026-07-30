@@ -6,11 +6,10 @@
 // narrow the search window before looking for the value nearby.
 //
 // Requires (loaded via CDN before this script):
-//   pdf.js, fuse.js, tesseract.js
+//   pdf.js, fuse.js, tesseract.js, opencv.js (optional), handwritten-verification.js
 
 const Verifier = (() => {
   const CHUNK_SIZE = 200;
-
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
   function chunkText(text, source, page) {
@@ -19,7 +18,10 @@ const Verifier = (() => {
     let cur = '';
     for (const w of words) {
       cur += (cur ? ' ' : '') + w;
-      if (cur.length >= CHUNK_SIZE) { chunks.push({ text: cur.trim(), source, page }); cur = ''; }
+      if (cur.length >= CHUNK_SIZE) {
+        chunks.push({ text: cur.trim(), source, page });
+        cur = '';
+      }
     }
     if (cur.trim()) chunks.push({ text: cur.trim(), source, page });
     return chunks;
@@ -32,6 +34,7 @@ const Verifier = (() => {
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     const totalPages = pdf.numPages;
     let textChunks = [];
+    let pageCanvases = [];
 
     for (let p = 1; p <= totalPages; p++) {
       const page = await pdf.getPage(p);
@@ -44,23 +47,47 @@ const Verifier = (() => {
     let ocrChunks = [];
     // Only run OCR if very little selectable text was found (keeps demo fast for normal PDFs)
     const totalTextLen = textChunks.reduce((s, c) => s + c.text.length, 0);
+
     if (totalTextLen < 60) {
       const worker = await Tesseract.createWorker('eng', 1, {
         logger: m => {
-          if (m.status === 'recognizing text') onProgress(40 + (m.progress || 0) * 55, `OCR: ${Math.round((m.progress || 0) * 100)}%`);
+          if (m.status === 'recognizing text')
+            onProgress(40 + (m.progress || 0) * 55, `OCR: ${Math.round((m.progress || 0) * 100)}%`);
         },
       });
+
       for (let p = 1; p <= totalPages; p++) {
         const page = await pdf.getPage(p);
         const viewport = page.getViewport({ scale: 2.0 });
         const canvas = document.createElement('canvas');
-        canvas.width = viewport.width; canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
         await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+        // Store rendered canvas for handwritten OCR fallback pass if standard OCR yields low text volume
+        pageCanvases.push({ pageNum: p, canvas });
+
         const { data: { text } } = await worker.recognize(canvas);
         const cleaned = text.replace(/\s+/g, ' ').trim();
         if (cleaned.length > 20) ocrChunks.push(...chunkText(cleaned, 'ocr', p));
       }
       await worker.terminate();
+
+      // --- HANDWRITTEN OCR FALLBACK PASS ---
+      // If standard OCR yields < 30 characters, run HandwrittenOCR on the saved page canvases
+      const totalOcrLen = ocrChunks.reduce((s, c) => s + c.text.length, 0);
+      if (totalOcrLen < 30 && window.HandwrittenOCR && pageCanvases.length > 0) {
+        onProgress(90, 'Processing handwritten text fallback...');
+        console.warn("Standard OCR yield low. Triggering HandwrittenOCR fallback engine...");
+
+        for (const item of pageCanvases) {
+          const hwResult = await window.HandwrittenOCR.processHandwrittenDoc(item.canvas);
+          const hwCleaned = (hwResult.extractedText || '').replace(/\s+/g, ' ').trim();
+          if (hwCleaned.length > 10) {
+            ocrChunks.push(...chunkText(hwCleaned, 'handwritten-ocr', item.pageNum));
+          }
+        }
+      }
     }
 
     onProgress(100, 'Ready');
@@ -69,8 +96,13 @@ const Verifier = (() => {
 
   function fuseFind(query, candidates, threshold) {
     const fuse = new Fuse(candidates, {
-      keys: ['text'], threshold, ignoreLocation: true, ignoreFieldNorm: true, minMatchCharLength: 3,
-      includeMatches: true, includeScore: true,
+      keys: ['text'],
+      threshold,
+      ignoreLocation: true,
+      ignoreFieldNorm: true,
+      minMatchCharLength: 3,
+      includeMatches: true,
+      includeScore: true,
     });
     // Fuse's `threshold` option alone does not reliably cut off matches for short
     // queries against long chunk text (esp. with ignoreLocation: true) — enforce the
@@ -89,7 +121,9 @@ const Verifier = (() => {
     return null;
   }
 
-  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
 
   function buildSnippet(text, aStart, aEnd, nStart, nEnd) {
     const ctxS = Math.max(0, aStart - 20);
@@ -124,12 +158,10 @@ const Verifier = (() => {
     const mn = monthNames[month - 1], ms = monthShort[month - 1];
     return [
       `${dd}/${mm}/${year}`, `${dd}-${mm}-${year}`, `${dd}.${mm}.${year}`,
-      `${day}/${month}/${year}`, `${day}-${month}-${year}`,
-      `${year}-${mm}-${dd}`, `${year}/${mm}/${dd}`,
-      `${dd} ${mn} ${year}`, `${dd} ${ms} ${year}`,
-      `${mn} ${dd}, ${year}`, `${ms} ${dd}, ${year}`,
-      `${mn} ${day} ${year}`, `${ms} ${day} ${year}`,
-      `${dd}/${mm}/${String(year).slice(2)}`,
+      `${day}/${month}/${year}`, `${day}-${month}-${year}`, `${year}-${mm}-${dd}`,
+      `${year}/${mm}/${dd}`, `${dd} ${mn} ${year}`, `${dd} ${ms} ${year}`,
+      `${mn} ${dd}, ${year}`, `${ms} ${dd}, ${year}`, `${mn} ${day} ${year}`,
+      `${ms} ${day} ${year}`, `${dd}/${mm}/${String(year).slice(2)}`,
     ];
   }
 
@@ -144,7 +176,6 @@ const Verifier = (() => {
   // single whole-string fuzzy pass often won't hit, even though a human would clearly
   // recognise it as the same test.
   const STOP_WORDS = new Set(['and', 'the', 'for', 'serum', 'test', 'level', 'with', 'tab', 'cap', 'examination', 'of']);
-
   const TEST_ALIASES = {
     'cbc': ['complete blood count', 'blood picture', 'hemogram'],
     'crp': ['c-reactive protein', 'c reactive protein'],
@@ -189,14 +220,12 @@ const Verifier = (() => {
   function getLabelVariants(label) {
     const variants = new Set([label.toLowerCase().trim()]);
     const lower = label.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-
     // 1. Generate dynamic acronym from full form (e.g. "COMPLETE BLOOD COUNT" -> "cbc")
     const words = label.toLowerCase().split(/[\s\-]+/).filter(w => w.length > 0 && !STOP_WORDS.has(w));
     if (words.length >= 2) {
       const acronym = words.map(w => w[0]).join('');
       if (acronym.length >= 2) variants.add(acronym);
     }
-    
     // 2. Map aliases (both ways)
     for (const [short, longs] of Object.entries(TEST_ALIASES)) {
       if (lower === short || lower === short.replace(/[^a-z0-9]/g, '')) {
@@ -214,7 +243,6 @@ const Verifier = (() => {
 
   function matchLabelInChunks(label, chunks, threshold = 0.35) {
     if (!chunks || chunks.length === 0) return { status: 'pending' };
-
     const variants = getLabelVariants(label);
     let bestResult = { status: 'failed', ratio: 0 };
 
@@ -272,7 +300,6 @@ const Verifier = (() => {
             }
           }
         }
-
         if (bestRatio > bestResult.ratio) {
           if (bestRatio >= 0.80) {
             bestResult = { status: 'verified', snippet: lastSnippet, page: lastPage, method: 'token', ratio: bestRatio };
@@ -283,7 +310,6 @@ const Verifier = (() => {
         }
       }
     }
-
     return bestResult;
   }
 
@@ -291,29 +317,23 @@ const Verifier = (() => {
   function verifyValue(userVal, field, chunks, threshold = 0.4, proximity = 150) {
     userVal = (userVal || '').toString().trim();
     if (!userVal || !chunks.length) return { status: 'pending' };
-
     let searchValues = [userVal];
+
     if (field.inputType === 'date') {
       searchValues = parseDateVariants(userVal);
       if (searchValues.length === 0) return { status: 'pending' };
     }
+
     if (field.inputType === 'amount') {
       const numeric = userVal.replace(/[^0-9.]/g, '');
       const numFloat = parseFloat(numeric);
-      searchValues = [
-        userVal, 
-        numeric, 
-        numFloat.toLocaleString('en-IN'),
-        numFloat.toFixed(2),
-        numFloat.toLocaleString('en-IN', {minimumFractionDigits: 2})
-      ];
+      searchValues = [userVal, numeric, numFloat.toLocaleString('en-IN'), numFloat.toFixed(2), numFloat.toLocaleString('en-IN', {minimumFractionDigits: 2})];
       searchValues = [...new Set(searchValues)];
     }
 
     if (field.noAnchorNeeded) {
       for (const variant of searchValues) {
         const lowerVariant = variant.toLowerCase();
-        
         // Pass 0: Exact substring match
         for (const chunk of chunks) {
           const idx = chunk.text.toLowerCase().indexOf(lowerVariant);
@@ -321,7 +341,6 @@ const Verifier = (() => {
             return { status: 'verified', snippet: buildSnippet(chunk.text, idx, idx + variant.length, idx, idx + variant.length), page: chunk.page };
           }
         }
-        
         // Pass 1: Fuzzy match
         const hits = fuseFind(variant, chunks, threshold);
         if (hits.length > 0) {
@@ -336,10 +355,9 @@ const Verifier = (() => {
 
     const anchorHits = fuseFind(field.anchor, chunks, threshold);
     if (anchorHits.length === 0) return { status: 'failed' };
-
     let found = null;
-    outer:
-    for (const aHit of anchorHits) {
+
+    outer: for (const aHit of anchorHits) {
       const chunk = aHit.item;
       const aPos = getMatchPos(chunk.text, field.anchor, aHit);
       if (!aPos) continue;
@@ -350,8 +368,7 @@ const Verifier = (() => {
       for (const variant of searchValues) {
         const exactIdx = winTxt.toLowerCase().indexOf(variant.toLowerCase());
         if (exactIdx !== -1) {
-          found = { page: chunk.page, text: chunk.text, anchorStart: aPos.start, anchorEnd: aPos.end,
-            nearbyStart: winS + exactIdx, nearbyEnd: winS + exactIdx + variant.length, score: 100 };
+          found = { page: chunk.page, text: chunk.text, anchorStart: aPos.start, anchorEnd: aPos.end, nearbyStart: winS + exactIdx, nearbyEnd: winS + exactIdx + variant.length, score: 100 };
           break outer;
         }
         const nHits = fuseFind(variant, [{ text: winTxt }], threshold);
@@ -359,8 +376,7 @@ const Verifier = (() => {
           const nHit = nHits[0];
           const nPos = getMatchPos(winTxt, variant, nHit);
           if (nPos) {
-            found = { page: chunk.page, text: chunk.text, anchorStart: aPos.start, anchorEnd: aPos.end,
-              nearbyStart: winS + nPos.start, nearbyEnd: winS + nPos.end, score: Math.round((1 - (nHit.score || 0)) * 100) };
+            found = { page: chunk.page, text: chunk.text, anchorStart: aPos.start, anchorEnd: aPos.end, nearbyStart: winS + nPos.start, nearbyEnd: winS + nPos.end, score: Math.round((1 - (nHit.score || 0)) * 100) };
             break outer;
           }
         }
@@ -371,6 +387,7 @@ const Verifier = (() => {
       const snippet = buildSnippet(found.text, found.anchorStart, found.anchorEnd, found.nearbyStart, found.nearbyEnd);
       return { status: found.score >= 80 ? 'verified' : 'partial', snippet, page: found.page };
     }
+
     return { status: 'failed' };
   }
 
