@@ -1,2 +1,3 @@
 remark_id,claim_id,user_type,user_name,date,time,previous_status,current_status,remarks
 RMK0001,CLM0001,Employee,EMP10456,2026-07-07,15:21:25,,Submitted,Claim submitted by employee.
+RMK0002,CLM0002,Employee,EMP00828,2026-07-30,14:00:10,,Submitted,Claim submitted by employee.

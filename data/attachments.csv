@@ -1,3 +1,5 @@
 attachment_id,claim_id,attachment_level,line_number,file_name,file_extension,attachment_size,file_path,uploaded_date
 ATT0001,CLM0001,Bill Line,1,shubhi blood test invoice.pdf,pdf,615.5 KB,/uploads/1783417885120_shubhi_blood_test_invoice.pdf,2026-07-07
 ATT0002,CLM0001,Prescription,1,prescription EAR NAD signed.pdf,pdf,617.4 KB,/uploads/1783417885145_prescription_EAR_NAD_signed.pdf,2026-07-07
+ATT0003,CLM0002,Bill Line,1,Varsha dental 28072026.pdf,pdf,639.1 KB,/uploads/1785400210723_Varsha_dental_28072026.pdf,2026-07-30
+ATT0004,CLM0002,Prescription Line,1,Varsha dental 28072026.pdf,pdf,639.1 KB,/uploads/1785400210731_Varsha_dental_28072026.pdf,2026-07-30
